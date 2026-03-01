@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>うさぎを探せ！🐰</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { width: 100vw; height: 100vh; overflow: hidden; font-family: 'Hiragino Maru Gothic Pro', 'BIZ UDGothic', sans-serif; }
+
+    /* ── SCREENS ── */
+    .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; z-index: 200; }
+    .screen.hidden { display: none; }
+
+    /* ── START ── */
+    #start-screen { background: linear-gradient(155deg, #FFE0F0 0%, #E8F0FF 55%, #FFF5E0 100%); }
+    .game-title { font-size: 2.8rem; font-weight: 900; color: #FF5588; text-shadow: 3px 3px 0 #FFAABB, 0 0 20px rgba(255,85,136,.3); letter-spacing: .06em; }
+    .game-subtitle { font-size: 1rem; color: #FF88AA; }
+    .start-desc { font-size: .9rem; color: #FFAACC; background: rgba(255,255,255,.65); padding: 10px 22px; border-radius: 14px; text-align: center; line-height: 1.7; }
+
+    /* ── BUTTONS ── */
+    .btn { padding: 13px 38px; font-size: 1.25rem; font-weight: bold; border: none; border-radius: 50px; cursor: pointer; color: white; letter-spacing: .05em; box-shadow: 0 5px 15px rgba(0,0,0,.15); transition: transform .15s, box-shadow .15s; }
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.22); }
+    .btn:active { transform: translateY(1px); }
+    .btn-pink { background: linear-gradient(135deg, #FF7AAB, #FF4488); }
+
+    /* ── GAME SCREEN ── */
+    #game-screen { position: fixed; inset: 0; z-index: 100; }
+    #game-screen.hidden { display: none; }
+    #game-area { width: 100%; height: 100%; position: relative; overflow: hidden; background: linear-gradient(180deg, #FFF0F8 0%, #F0F8FF 60%, #F2FFF0 100%); }
+
+    /* HUD */
+    #hud { position: fixed; top: 0; left: 0; right: 0; padding: 12px 22px; display: flex; justify-content: space-between; align-items: center; z-index: 150; background: rgba(255,255,255,.88); backdrop-filter: blur(14px); box-shadow: 0 2px 16px rgba(255,100,150,.12); }
+    #stage-label { font-size: 1.2rem; font-weight: bold; color: #FF5588; }
+    #hint-box { font-size: .9rem; color: #FF88AA; background: #FFF0F6; padding: 5px 15px; border-radius: 20px; border: 1.5px solid #FFBBCC; }
+    .stage-dots { display: flex; gap: 8px; }
+    .dot { width: 13px; height: 13px; border-radius: 50%; background: #FFDDE8; border: 2px solid #FFAABB; transition: all .3s; }
+    .dot.done { background: #FF5588; border-color: #FF2266; }
+    .dot.current { background: #FF99BB; border-color: #FF5588; box-shadow: 0 0 6px #FF5588; }
+
+    /* ── ANIMAL ── */
+    .animal { position: absolute; cursor: pointer; user-select: none; z-index: 10; }
+    .animal:hover svg { filter: drop-shadow(0 0 10px rgba(255,160,100,.7)); }
+    .animal.wrong { animation: wrongShake .4s ease; }
+    @keyframes wrongShake { 0%,100%{transform:translateX(0) var(--flip)} 25%{transform:translateX(-6px) var(--flip)} 75%{transform:translateX(6px) var(--flip)} }
+
+    /* ── POPUP ── */
+    .popup { position: fixed; pointer-events: none; font-size: 1rem; font-weight: bold; z-index: 300; white-space: nowrap; animation: popupFloat .9s ease-out forwards; }
+    @keyframes popupFloat { 0%{transform:translateX(-50%) scale(.5); opacity:1} 100%{transform:translateX(-50%) translateY(-55px) scale(1.1); opacity:0} }
+
+    /* ── STAGE CLEAR ── */
+    #stage-clear-screen { background: rgba(255,228,244,.97); backdrop-filter: blur(14px); }
+    .clear-big { font-size: 3rem; font-weight: 900; color: #FF5588; text-shadow: 3px 3px 0 #FFAABB; animation: clearPop .5s cubic-bezier(.34,1.56,.64,1); }
+    .clear-sub { font-size: 1.05rem; color: #FF88AA; }
+    @keyframes clearPop { from{transform:scale(0) rotate(-12deg)} to{transform:scale(1) rotate(0)} }
+
+    /* ── GAME CLEAR ── */
+    #game-clear-screen { background: linear-gradient(155deg, #FFE066 0%, #FFB0D8 50%, #B0D8FF 100%); }
+    .final-title { font-size: 2.5rem; font-weight: 900; color: #FF3366; text-shadow: 3px 3px 0 #FFAA99; animation: clearPop .5s ease; }
+    .final-sub { font-size: 1rem; color: #FF6688; }
+    .hearts { font-size: 1.8rem; letter-spacing: .08em; }
+
+    /* ── SPARKLE ── */
+    .sparkle { position: fixed; pointer-events: none; z-index: 400; animation: sparkleFly 1.1s ease-out forwards; }
+    @keyframes sparkleFly { 0%{transform:scale(0) translateY(0); opacity:1} 100%{transform:scale(1.2) translateY(80px); opacity:0} }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     START SCREEN
+════════════════════════════════ -->
+<div id="start-screen" class="screen">
+  <svg width="150" height="140" viewBox="0 0 150 140" style="filter:drop-shadow(0 8px 22px rgba(255,100,150,.35))">
+    <polygon points="30,66 52,12 70,66" fill="#F4A460"/>
+    <polygon points="38,63 52,29 64,63" fill="#FFB6C1"/>
+    <polygon points="80,66 98,12 120,66" fill="#F4A460"/>
+    <polygon points="86,63 98,29 112,63" fill="#FFB6C1"/>
+    <ellipse cx="75" cy="88" rx="58" ry="52" fill="#F4A460"/>
+    <ellipse cx="54" cy="80" rx="11" ry="13" fill="white"/>
+    <ellipse cx="96" cy="80" rx="11" ry="13" fill="white"/>
+    <ellipse cx="56" cy="82" rx="8" ry="10" fill="#2A1800"/>
+    <ellipse cx="98" cy="82" rx="8" ry="10" fill="#2A1800"/>
+    <circle cx="59" cy="78" r="3.5" fill="white"/>
+    <circle cx="101" cy="78" r="3.5" fill="white"/>
+    <ellipse cx="37" cy="98" rx="14" ry="8" fill="#FFB6C1" opacity=".6"/>
+    <ellipse cx="113" cy="98" rx="14" ry="8" fill="#FFB6C1" opacity=".6"/>
+    <ellipse cx="75" cy="98" rx="7" ry="5" fill="#FF9999"/>
+    <path d="M68,105 Q75,115 82,105" fill="none" stroke="#D07070" stroke-width="2" stroke-linecap="round"/>
+    <line x1="14" y1="93" x2="63" y2="99" stroke="#99999980" stroke-width="1.5"/>
+    <line x1="14" y1="103" x2="63" y2="103" stroke="#99999980" stroke-width="1.5"/>
+    <line x1="87" y1="99" x2="136" y2="93" stroke="#99999980" stroke-width="1.5"/>
+    <line x1="87" y1="103" x2="136" y2="103" stroke="#99999980" stroke-width="1.5"/>
+    <text x="67" y="55" font-size="14" fill="#FF6699">♡</text>
+  </svg>
+  <div class="game-title">うさぎを探せ！</div>
+  <div class="game-subtitle">🐱 猫たちの中にまぎれたうさぎを見つけよう！ 🐰</div>
+  <div class="start-desc">全3ステージ、だんだん難しくなるよ 🌟<br>うさぎを見つけてクリック！</div>
+  <button class="btn btn-pink" onclick="startGame()">▶ START</button>
+</div>
+
+<!-- ════════════════════════════════
+     GAME SCREEN
+════════════════════════════════ -->
+<div id="game-screen" class="hidden">
+  <div id="game-area"></div>
+  <div id="hud">
+    <div id="stage-label">ステージ 1</div>
+    <div id="hint-box">🐰 うさぎを探してクリック！</div>
+    <div class="stage-dots">
+      <div class="dot current" id="dot-0"></div>
+      <div class="dot" id="dot-1"></div>
+      <div class="dot" id="dot-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     STAGE CLEAR
+════════════════════════════════ -->
+<div id="stage-clear-screen" class="screen hidden">
+  <div class="clear-big" id="stage-clear-text">ステージ 1 クリア！</div>
+  <div class="clear-sub">うさぎを見つけたよ！🐰✨</div>
+  <button class="btn btn-pink" onclick="nextStage()">次のステージへ ▶</button>
+</div>
+
+<!-- ════════════════════════════════
+     GAME CLEAR
+════════════════════════════════ -->
+<div id="game-clear-screen" class="screen hidden">
+  <div class="final-title">🎊 全ステージクリア！ 🎊</div>
+  <div class="final-sub">うさぎを全部見つけたね！すごい！</div>
+
+  <!-- SUPER CUTE CAT -->
+  <svg width="215" height="225" viewBox="0 0 215 225" style="filter:drop-shadow(0 14px 28px rgba(255,100,150,.4))">
+    <!-- body -->
+    <ellipse cx="107" cy="185" rx="54" ry="38" fill="#F4A460"/>
+    <!-- tail -->
+    <path d="M153,175 Q200,148 190,120 Q180,102 158,118" fill="none" stroke="#F4A460" stroke-width="15" stroke-linecap="round"/>
+    <!-- paws -->
+    <ellipse cx="83" cy="215" rx="19" ry="10" fill="#F4A460"/>
+    <ellipse cx="131" cy="215" rx="19" ry="10" fill="#F4A460"/>
+    <!-- ears -->
+    <polygon points="42,82 66,22 90,82" fill="#F4A460"/>
+    <polygon points="51,79 66,42 81,79" fill="#FFB6C1"/>
+    <polygon points="124,82 148,22 172,82" fill="#F4A460"/>
+    <polygon points="133,79 148,42 163,79" fill="#FFB6C1"/>
+    <!-- head -->
+    <ellipse cx="107" cy="112" rx="65" ry="62" fill="#F4A460"/>
+    <!-- left eye -->
+    <ellipse cx="81" cy="100" rx="17" ry="20" fill="white"/>
+    <ellipse cx="84" cy="103" rx="13" ry="16" fill="#2A1800"/>
+    <circle cx="83" cy="93" r="5.5" fill="#6688FF" opacity=".35"/>
+    <circle cx="90" cy="98" r="5.5" fill="white"/>
+    <circle cx="81" cy="109" r="2.5" fill="white"/>
+    <!-- right eye -->
+    <ellipse cx="133" cy="100" rx="17" ry="20" fill="white"/>
+    <ellipse cx="136" cy="103" rx="13" ry="16" fill="#2A1800"/>
+    <circle cx="135" cy="93" r="5.5" fill="#6688FF" opacity=".35"/>
+    <circle cx="142" cy="98" r="5.5" fill="white"/>
+    <circle cx="133" cy="109" r="2.5" fill="white"/>
+    <!-- blush -->
+    <ellipse cx="62" cy="118" rx="19" ry="12" fill="#FFB6C1" opacity=".72"/>
+    <ellipse cx="152" cy="118" rx="19" ry="12" fill="#FFB6C1" opacity=".72"/>
+    <!-- nose -->
+    <polygon points="107,121 101,130 113,130" fill="#FF9999"/>
+    <!-- mouth -->
+    <path d="M93,132 Q107,146 121,132" fill="none" stroke="#D07070" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- whiskers -->
+    <line x1="26" y1="115" x2="88" y2="122" stroke="#99999990" stroke-width="1.8"/>
+    <line x1="26" y1="126" x2="88" y2="126" stroke="#99999990" stroke-width="1.8"/>
+    <line x1="126" y1="122" x2="188" y2="115" stroke="#99999990" stroke-width="1.8"/>
+    <line x1="126" y1="126" x2="188" y2="126" stroke="#99999990" stroke-width="1.8"/>
+    <!-- heart -->
+    <text x="98" y="72" font-size="22" fill="#FF6699">♡</text>
+    <!-- sparkles -->
+    <text x="10" y="48" font-size="17" fill="#FFD700">✦</text>
+    <text x="190" y="48" font-size="17" fill="#FFD700">✦</text>
+    <text x="4" y="138" font-size="12" fill="#FF99CC">✦</text>
+    <text x="200" y="138" font-size="12" fill="#FF99CC">✦</text>
+    <text x="28" y="24" font-size="14" fill="#FFD700">★</text>
+    <text x="172" y="24" font-size="14" fill="#FFD700">★</text>
+  </svg>
+
+  <div class="hearts">🐱💕🐱💕🐱</div>
+  <div class="final-sub">全3ステージ制覇！うさぎ探しの達人だね！</div>
+  <button class="btn btn-pink" onclick="resetGame()">↺ もう一度遊ぶ</button>
+</div>
+
+<!-- ════════════════════════════════
+     SCRIPT
+════════════════════════════════ -->
+<script>
+  // ─── CONFIG ───────────────────────────────────
+  const STAGES = [
+    { catCount:  6, size: 70, speed: 1.3, turnChance: 0.003, name: 'ステージ 1' },
+    { catCount: 14, size: 58, speed: 1.9, turnChance: 0.006, name: 'ステージ 2' },
+    { catCount: 26, size: 46, speed: 2.4, turnChance: 0.011, name: 'ステージ 3' },
+  ];
+
+  const CAT_COLORS = [
+    { body:'#F4A460', ear:'#C87838', inner:'#FFB6C1' }, // orange
+    { body:'#AAAAAA', ear:'#808080', inner:'#FFB6C1' }, // gray
+    { body:'#303030', ear:'#1A1A1A', inner:'#FF88CC' }, // black
+    { body:'#F5F5F0', ear:'#D0D0C8', inner:'#FFB6C1' }, // white
+    { body:'#C49060', ear:'#9A6840', inner:'#FFB6C1' }, // brown
+  ];
+
+  const HUD_H = 58;
+  let currentStage = 0;
+  let animals = [];
+  let animId = null;
+  let gameRunning = false;
+
+  // ─── SVG: CAT ─────────────────────────────────
+  function catSVG(c, s) {
+    const hx=s*.5, hy=s*.52, hr=s*.34, vr=s*.30;
+    const ex1=hx-hr*.43, ey=hy-vr*.12, er=hr*.175, evr=vr*.215;
+    const ex2=hx+hr*.43;
+    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+      <!-- ears -->
+      <polygon points="${hx-hr*.55},${hy-vr*.72} ${hx-hr*.72},${hy-vr*1.28} ${hx-hr*.18},${hy-vr*.77}" fill="${c.ear}"/>
+      <polygon points="${hx-hr*.56},${hy-vr*.74} ${hx-hr*.69},${hy-vr*1.1} ${hx-hr*.23},${hy-vr*.79}" fill="${c.inner}"/>
+      <polygon points="${hx+hr*.18},${hy-vr*.77} ${hx+hr*.72},${hy-vr*1.28} ${hx+hr*.55},${hy-vr*.72}" fill="${c.ear}"/>
+      <polygon points="${hx+hr*.23},${hy-vr*.79} ${hx+hr*.69},${hy-vr*1.1} ${hx+hr*.56},${hy-vr*.74}" fill="${c.inner}"/>
+      <!-- body peek -->
+      <ellipse cx="${hx}" cy="${s*.9}" rx="${hr*.72}" ry="${s*.1}" fill="${c.body}"/>
+      <!-- head -->
+      <ellipse cx="${hx}" cy="${hy}" rx="${hr}" ry="${vr}" fill="${c.body}"/>
+      <!-- eyes -->
+      <ellipse cx="${ex1}" cy="${ey}" rx="${er}" ry="${evr}" fill="white"/>
+      <ellipse cx="${ex2}" cy="${ey}" rx="${er}" ry="${evr}" fill="white"/>
+      <ellipse cx="${ex1+er*.1}" cy="${ey+evr*.1}" rx="${er*.72}" ry="${evr*.72}" fill="#2A1800"/>
+      <ellipse cx="${ex2+er*.1}" cy="${ey+evr*.1}" rx="${er*.72}" ry="${evr*.72}" fill="#2A1800"/>
+      <circle cx="${ex1-er*.25}" cy="${ey-evr*.22}" r="${er*.34}" fill="white"/>
+      <circle cx="${ex2-er*.25}" cy="${ey-evr*.22}" r="${er*.34}" fill="white"/>
+      <!-- blush -->
+      <ellipse cx="${hx-hr*.68}" cy="${hy+vr*.24}" rx="${hr*.2}" ry="${vr*.15}" fill="#FFB6C1" opacity=".6"/>
+      <ellipse cx="${hx+hr*.68}" cy="${hy+vr*.24}" rx="${hr*.2}" ry="${vr*.15}" fill="#FFB6C1" opacity=".6"/>
+      <!-- nose -->
+      <ellipse cx="${hx}" cy="${hy+vr*.33}" rx="${hr*.1}" ry="${vr*.08}" fill="#FF9999"/>
+      <!-- mouth -->
+      <path d="M${hx-hr*.15},${hy+vr*.44} Q${hx},${hy+vr*.6} ${hx+hr*.15},${hy+vr*.44}" fill="none" stroke="#D07070" stroke-width="${s*.013}" stroke-linecap="round"/>
+      <!-- whiskers -->
+      <line x1="${hx-hr*1.05}" y1="${hy+vr*.22}" x2="${hx-hr*.13}" y2="${hy+vr*.3}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
+      <line x1="${hx-hr*1.05}" y1="${hy+vr*.36}" x2="${hx-hr*.13}" y2="${hy+vr*.38}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
+      <line x1="${hx+hr*.13}" y1="${hy+vr*.3}" x2="${hx+hr*1.05}" y2="${hy+vr*.22}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
+      <line x1="${hx+hr*.13}" y1="${hy+vr*.38}" x2="${hx+hr*1.05}" y2="${hy+vr*.36}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
+    </svg>`;
+  }
+
+  // ─── SVG: RABBIT ──────────────────────────────
+  function rabbitSVG(s) {
+    const hx=s*.5, hy=s*.58, hr=s*.31, vr=s*.28;
+    const ex1=hx-hr*.43, ey=hy-vr*.1, er=hr*.175, evr=vr*.215;
+    const ex2=hx+hr*.43;
+    const eLx=hx-hr*.4, eRx=hx+hr*.4, eCy=s*.2, eW=s*.1, eH=s*.27;
+    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
+      <!-- long ears (key difference!) -->
+      <ellipse cx="${eLx}" cy="${eCy}" rx="${eW}" ry="${eH}" fill="#EEEEE8"/>
+      <ellipse cx="${eLx}" cy="${eCy}" rx="${eW*.55}" ry="${eH*.74}" fill="#FFB6C1"/>
+      <ellipse cx="${eRx}" cy="${eCy}" rx="${eW}" ry="${eH}" fill="#EEEEE8"/>
+      <ellipse cx="${eRx}" cy="${eCy}" rx="${eW*.55}" ry="${eH*.74}" fill="#FFB6C1"/>
+      <!-- body peek -->
+      <ellipse cx="${hx}" cy="${s*.9}" rx="${hr*.72}" ry="${s*.1}" fill="#EEEEE8"/>
+      <!-- head -->
+      <ellipse cx="${hx}" cy="${hy}" rx="${hr}" ry="${vr}" fill="#EEEEE8"/>
+      <!-- eyes -->
+      <ellipse cx="${ex1}" cy="${ey}" rx="${er}" ry="${evr}" fill="white"/>
+      <ellipse cx="${ex2}" cy="${ey}" rx="${er}" ry="${evr}" fill="white"/>
+      <ellipse cx="${ex1+er*.1}" cy="${ey+evr*.1}" rx="${er*.72}" ry="${evr*.72}" fill="#2A1800"/>
+      <ellipse cx="${ex2+er*.1}" cy="${ey+evr*.1}" rx="${er*.72}" ry="${evr*.72}" fill="#2A1800"/>
+      <circle cx="${ex1-er*.25}" cy="${ey-evr*.22}" r="${er*.34}" fill="white"/>
+      <circle cx="${ex2-er*.25}" cy="${ey-evr*.22}" r="${er*.34}" fill="white"/>
+      <!-- blush -->
+      <ellipse cx="${hx-hr*.68}" cy="${hy+vr*.27}" rx="${hr*.2}" ry="${vr*.15}" fill="#FFB6C1" opacity=".65"/>
+      <ellipse cx="${hx+hr*.68}" cy="${hy+vr*.27}" rx="${hr*.2}" ry="${vr*.15}" fill="#FFB6C1" opacity=".65"/>
+      <!-- nose -->
+      <ellipse cx="${hx}" cy="${hy+vr*.36}" rx="${hr*.12}" ry="${vr*.09}" fill="#FF9999"/>
+      <!-- mouth -->
+      <path d="M${hx-hr*.13},${hy+vr*.46} Q${hx},${hy+vr*.63} ${hx+hr*.13},${hy+vr*.46}" fill="none" stroke="#D07070" stroke-width="${s*.013}" stroke-linecap="round"/>
+      <!-- whiskers -->
+      <line x1="${hx-hr*1.0}" y1="${hy+vr*.24}" x2="${hx-hr*.13}" y2="${hy+vr*.32}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
+      <line x1="${hx-hr*1.0}" y1="${hy+vr*.38}" x2="${hx-hr*.13}" y2="${hy+vr*.39}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
+      <line x1="${hx+hr*.13}" y1="${hy+vr*.32}" x2="${hx+hr*1.0}" y2="${hy+vr*.24}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
+      <line x1="${hx+hr*.13}" y1="${hy+vr*.39}" x2="${hx+hr*1.0}" y2="${hy+vr*.38}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
+    </svg>`;
+  }
+
+  // ─── GAME FLOW ────────────────────────────────
+  function startGame() {
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    currentStage = 0;
+    loadStage();
+  }
+
+  function loadStage() {
+    const cfg = STAGES[currentStage];
+    const area = document.getElementById('game-area');
+    area.querySelectorAll('.animal').forEach(e => e.remove());
+    animals = [];
+    if (animId) cancelAnimationFrame(animId);
+
+    // HUD
+    document.getElementById('stage-label').textContent = cfg.name;
+    for (let i = 0; i < 3; i++) {
+      const d = document.getElementById(`dot-${i}`);
+      d.className = 'dot' + (i < currentStage ? ' done' : i === currentStage ? ' current' : '');
+    }
+
+    const W = window.innerWidth, H = window.innerHeight, sz = cfg.size;
+    const total = cfg.catCount + 1;
+    const rabbitIdx = Math.floor(Math.random() * total);
+
+    for (let i = 0; i < total; i++) {
+      const isRabbit = i === rabbitIdx;
+      const c = CAT_COLORS[Math.floor(Math.random() * CAT_COLORS.length)];
+      const el = document.createElement('div');
+      el.className = 'animal';
+      el.style.cssText = `width:${sz}px;height:${sz}px;`;
+      el.innerHTML = isRabbit ? rabbitSVG(sz) : catSVG(c, sz);
+
+      const x = sz + Math.random() * (W - sz * 2.5);
+      const y = HUD_H + sz + Math.random() * (H - HUD_H - sz * 2.5);
+      const ang = Math.random() * Math.PI * 2;
+      const spd = cfg.speed * (.8 + Math.random() * .4);
+
+      const a = { el, isRabbit, x, y,
+        dx: Math.cos(ang) * spd, dy: Math.sin(ang) * spd,
+        phase: Math.random() * Math.PI * 2,
+        turnChance: cfg.turnChance,
+        facingRight: Math.cos(ang) >= 0,
+      };
+
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+      el.addEventListener('click', () => onAnimalClick(a));
+      area.appendChild(el);
+      animals.push(a);
+    }
+
+    gameRunning = true;
+    loop();
+  }
+
+  function loop() {
+    if (!gameRunning) return;
+    const W = window.innerWidth, H = window.innerHeight;
+    animals.forEach(a => {
+      a.phase += 0.042;
+      if (Math.random() < a.turnChance) {
+        const spd = Math.hypot(a.dx, a.dy);
+        const ang = Math.random() * Math.PI * 2;
+        a.dx = Math.cos(ang) * spd;
+        a.dy = Math.sin(ang) * spd;
+      }
+      const sz = parseInt(a.el.style.width);
+      a.x += a.dx; a.y += a.dy;
+      if (a.x < 0)      { a.x = 0;      a.dx =  Math.abs(a.dx); }
+      if (a.x > W - sz) { a.x = W - sz; a.dx = -Math.abs(a.dx); }
+      if (a.y < HUD_H)  { a.y = HUD_H;  a.dy =  Math.abs(a.dy); }
+      if (a.y > H - sz) { a.y = H - sz; a.dy = -Math.abs(a.dy); }
+
+      const bob  = Math.sin(a.phase) * 3;
+      const flip = a.dx < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+      a.el.style.left      = a.x + 'px';
+      a.el.style.top       = a.y + 'px';
+      a.el.style.transform = `translateY(${bob}px) ${flip}`;
+      a.el.style.setProperty('--flip', flip);
+    });
+    animId = requestAnimationFrame(loop);
+  }
+
+  // ─── CLICK HANDLER ────────────────────────────
+  function onAnimalClick(a) {
+    if (!gameRunning) return;
+    const cx = a.x + parseInt(a.el.style.width) / 2;
+
+    if (a.isRabbit) {
+      gameRunning = false;
+      cancelAnimationFrame(animId);
+      showPopup('みつけた！ 🐰✨', cx, a.y, '#FF5588');
+      spawnSparkles(cx, a.y, 18);
+      setTimeout(() => {
+        if (currentStage < STAGES.length - 1) showStageClear();
+        else showGameClear();
+      }, 750);
+    } else {
+      showPopup('にゃ！', cx, a.y, '#FF8844');
+      a.el.classList.remove('wrong');
+      void a.el.offsetWidth;
+      a.el.classList.add('wrong');
+      setTimeout(() => a.el.classList.remove('wrong'), 420);
+    }
+  }
+
+  // ─── SCREENS ──────────────────────────────────
+  function showStageClear() {
+    document.getElementById('stage-clear-text').textContent = `${STAGES[currentStage].name} クリア！ 🎉`;
+    document.getElementById('stage-clear-screen').classList.remove('hidden');
+    for (let i = 0; i < 6; i++)
+      setTimeout(() => spawnSparkles(Math.random() * window.innerWidth, 50 + Math.random() * 120, 6), i * 120);
+  }
+
+  function nextStage() {
+    document.getElementById('stage-clear-screen').classList.add('hidden');
+    currentStage++;
+    loadStage();
+  }
+
+  function showGameClear() {
+    document.getElementById('game-screen').classList.add('hidden');
+    document.getElementById('game-clear-screen').classList.remove('hidden');
+    for (let i = 0; i < 22; i++)
+      setTimeout(() => spawnSparkles(Math.random() * window.innerWidth, 20 + Math.random() * 160, 5), i * 95);
+  }
+
+  function resetGame() {
+    document.getElementById('game-clear-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    currentStage = 0;
+    loadStage();
+  }
+
+  // ─── EFFECTS ──────────────────────────────────
+  function showPopup(text, x, y, color) {
+    const el = document.createElement('div');
+    el.className = 'popup';
+    el.textContent = text;
+    el.style.cssText = `left:${x}px;top:${y - 10}px;color:${color};`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 950);
+  }
+
+  function spawnSparkles(x, y, count) {
+    const pool = ['✨','⭐','💕','🎉','💫','🌟','💖','🎊','🌸'];
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.className = 'sparkle';
+      el.textContent = pool[Math.floor(Math.random() * pool.length)];
+      el.style.cssText = `left:${x - 40 + Math.random() * 80}px;top:${y - 10}px;font-size:${.9 + Math.random() * 1.1}rem;animation-delay:${Math.random() * .3}s;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1300);
+    }
+  }
+</script>
+</body>
+</html>
