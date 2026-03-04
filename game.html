@@ -41,14 +41,19 @@
     .dot.current { background: #FF99BB; border-color: #FF5588; box-shadow: 0 0 6px #FF5588; }
     .dot.boss { background: #FFD700; border-color: #FFA500; }
 
-    /* NET (player) */
+    /* GLOVE (player) */
     #net { position: absolute; z-index: 50; pointer-events: none; font-size: 48px; transition: none; }
-    #net.catching { animation: netSwing .3s ease; }
-    @keyframes netSwing { 0%{transform:rotate(0)} 50%{transform:rotate(-30deg) scale(1.2)} 100%{transform:rotate(0)} }
+    #net.catching { animation: gloveGrab .3s ease; }
+    @keyframes gloveGrab {
+      0%  { transform: scale(1) rotate(0); }
+      35% { transform: scale(1.5) rotate(-25deg); }
+      65% { transform: scale(0.85) rotate(10deg); }
+      100%{ transform: scale(1) rotate(0); }
+    }
 
     /* ANIMAL */
-    .animal { position: absolute; z-index: 10; transition: none; cursor: pointer; }
-    .animal img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 3px solid rgba(255,255,255,.8); box-shadow: 0 2px 8px rgba(0,0,0,.2); pointer-events: none; }
+    .animal { position: absolute; z-index: 10; transition: none; cursor: pointer; border-radius: 50%; overflow: hidden; border: 3px solid rgba(255,255,255,.85); box-shadow: 0 2px 10px rgba(0,0,0,.22); }
+    .animal svg { width: 100%; height: 100%; display: block; pointer-events: none; }
     .animal.wrong { animation: wrongShake .4s ease; }
     @keyframes wrongShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
@@ -78,19 +83,32 @@
     .hp-bar.player-hp { background: linear-gradient(90deg, #44FF44, #88FF00); }
     .hp-label { color: white; font-size: .85rem; font-weight: bold; margin-bottom: 3px; }
 
-    #boss-rabbit { position: absolute; z-index: 20; }
-    #boss-rabbit img { width: 100%; height: 100%; object-fit: cover; border-radius: 20%; border: 4px solid #FFD700; box-shadow: 0 0 30px rgba(255,215,0,.5); }
+    #boss-rabbit { position: absolute; z-index: 20; border-radius: 18%; overflow: hidden; border: 4px solid #FFD700; box-shadow: 0 0 30px rgba(255,215,0,.5); }
+    #boss-rabbit svg { width: 100%; height: 100%; display: block; }
     .carrot { position: absolute; font-size: 28px; z-index: 15; pointer-events: none; }
-    #player-cat { position: absolute; z-index: 25; }
-    #player-cat img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 3px solid #44FF44; box-shadow: 0 0 15px rgba(0,255,0,.3); pointer-events: none; }
+    .ear-spin { position: absolute; z-index: 26; font-size: 38px; pointer-events: none; }
+    #player-cat { position: absolute; z-index: 25; border-radius: 50%; overflow: hidden; border: 3px solid #44FF44; box-shadow: 0 0 15px rgba(0,255,0,.3); }
+    #player-cat svg { width: 100%; height: 100%; display: block; }
+    #player-cat.scratching { animation: catAttack .3s ease; }
+    @keyframes catAttack {
+      0%  { transform: scale(1) rotate(0); }
+      35% { transform: scale(1.35) rotate(-22deg) translate(8px,-8px); }
+      100%{ transform: scale(1) rotate(0); }
+    }
+    .scratch-effect { position: absolute; z-index: 35; pointer-events: none; animation: scratchAnim .5s ease-out forwards; }
+    @keyframes scratchAnim {
+      0%  { opacity:0; transform: scale(0.4) rotate(-15deg); }
+      35% { opacity:1; transform: scale(1.15) rotate(5deg); }
+      100%{ opacity:0; transform: scale(0.9) rotate(0); }
+    }
     .punch-effect { position: absolute; font-size: 36px; z-index: 30; pointer-events: none; animation: punchPop .4s ease-out forwards; }
     @keyframes punchPop { 0%{transform:scale(0);opacity:1} 100%{transform:scale(2);opacity:0} }
 
     /* ENDING */
     #ending-screen.hidden { display: none; }
     #ending-screen { background: linear-gradient(180deg, #FFE0F0, #FFF5E0, #E0F0FF); }
-    .ending-scene { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
-    .ending-animal { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,.15); animation: endingBounce 1s ease infinite; }
+    .ending-scene { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
+    .ending-animal { display: inline-block; font-size: 50px; animation: endingBounce 1s ease infinite; }
     .ending-animal:nth-child(2n) { animation-delay: .2s; }
     .ending-animal:nth-child(3n) { animation-delay: .4s; }
     @keyframes endingBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
@@ -116,7 +134,7 @@
   <div class="game-subtitle">🐱 猫と犬の中にまぎれたうさぎを捕まえよう！ 🐶</div>
   <div class="start-desc">
     全10ステージ（ステージ10はボス戦！）<br>
-    🕹️ 方向キーで網を動かしてスペースで捕獲！<br>
+    🕹️ 方向キーで手袋を動かしてスペースでつかもう！<br>
     🖱️ マウスクリックでもOK！<br>
     ⏱️ 制限時間内にうさぎを見つけよう！
   </div>
@@ -126,7 +144,7 @@
 <!-- GAME SCREEN -->
 <div id="game-screen" class="hidden">
   <div id="game-area"></div>
-  <div id="net">🥅</div>
+  <div id="net">🧤</div>
   <div id="hud">
     <div id="stage-label">ステージ 1</div>
     <div id="hint-box">🐰 うさぎを捕まえよう！</div>
@@ -183,37 +201,133 @@
 
 <script>
 // ══════════════════════════════════════════════
-// REAL PHOTO URLs (Pixabay - free to use)
+// SVG ILLUSTRATION GENERATORS
 // ══════════════════════════════════════════════
-const CAT_PHOTOS = [
-  'https://cdn.pixabay.com/photo/2024/02/28/07/42/european-shorthair-8601492_640.jpg',
-  'https://cdn.pixabay.com/photo/2017/02/20/18/03/cat-2083492_640.jpg',
-  'https://cdn.pixabay.com/photo/2019/11/08/11/36/cat-4611189_640.jpg',
-  'https://cdn.pixabay.com/photo/2017/11/09/21/41/cat-2934720_640.jpg',
-  'https://cdn.pixabay.com/photo/2016/12/30/17/27/cat-1941089_640.jpg',
-  'https://cdn.pixabay.com/photo/2023/09/03/12/11/cat-8230767_640.jpg',
-  'https://cdn.pixabay.com/photo/2016/01/20/13/05/cat-1151519_640.jpg',
-  'https://cdn.pixabay.com/photo/2018/01/28/12/37/cat-3113513_640.jpg',
+const CAT_VARIANTS = [
+  { body:'#FF9955', dark:'#CC6633', inner:'#FFCCAA', eye:'#33CC33' },
+  { body:'#999999', dark:'#555555', inner:'#FFCCAA', eye:'#88DDFF' },
+  { body:'#2A2A2A', dark:'#111111', inner:'#FFCCAA', eye:'#FFDD00' },
+  { body:'#FFEE88', dark:'#CCAA44', inner:'#FFE8CC', eye:'#4488FF' },
+  { body:'#DDBBAA', dark:'#AA8877', inner:'#FFCCAA', eye:'#FF8888' },
+  { body:'#7799BB', dark:'#4466AA', inner:'#FFCCAA', eye:'#AAFFCC' },
+  { body:'#CC8855', dark:'#996633', inner:'#FFCCAA', eye:'#55AAEE' },
+  { body:'#EE99AA', dark:'#CC6677', inner:'#FFCCAA', eye:'#9922AA' },
 ];
 
-const DOG_PHOTOS = [
-  'https://cdn.pixabay.com/photo/2016/12/13/05/15/puppy-1903313_640.jpg',
-  'https://cdn.pixabay.com/photo/2016/02/18/18/37/puppy-1207816_640.jpg',
-  'https://cdn.pixabay.com/photo/2018/03/31/06/31/dog-3277416_640.jpg',
-  'https://cdn.pixabay.com/photo/2019/08/19/07/45/dog-4415649_640.jpg',
-  'https://cdn.pixabay.com/photo/2017/09/25/13/12/puppy-2785074_640.jpg',
-  'https://cdn.pixabay.com/photo/2016/05/09/10/42/weimaraner-1381186_640.jpg',
+const DOG_VARIANTS = [
+  { body:'#F0C040', dark:'#C89020', snout:'#F8E890', eye:'#5544BB', tongue: true  },
+  { body:'#C08050', dark:'#806030', snout:'#E0B088', eye:'#882200', tongue: false },
+  { body:'#EEEEEE', dark:'#AAAAAA', snout:'#FFE8E8', eye:'#333388', tongue: true  },
+  { body:'#DD9944', dark:'#BB7722', snout:'#FFDDAA', eye:'#226644', tongue: false },
+  { body:'#886644', dark:'#664422', snout:'#BB9977', eye:'#CC4433', tongue: true  },
+  { body:'#EEE0CC', dark:'#BBAA88', snout:'#FFE8CC', eye:'#885522', tongue: false },
 ];
 
-const RABBIT_PHOTOS = [
-  'https://cdn.pixabay.com/photo/2018/08/22/22/15/rabbit-3624771_640.jpg',
-  'https://cdn.pixabay.com/photo/2017/01/26/18/39/rabbit-2010247_640.jpg',
-  'https://cdn.pixabay.com/photo/2016/09/04/11/38/rabbit-1643958_640.jpg',
-  'https://cdn.pixabay.com/photo/2015/05/08/12/43/hare-758482_640.jpg',
-];
+function makeCatSVG(idx) {
+  const c = CAT_VARIANTS[idx % CAT_VARIANTS.length];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <polygon points="14,42 27,12 40,42" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <polygon points="60,42 73,12 86,42" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <polygon points="19,42 27,20 35,42" fill="${c.inner}"/>
+    <polygon points="65,42 73,20 81,42" fill="${c.inner}"/>
+    <circle cx="50" cy="60" r="36" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <line x1="50" y1="26" x2="50" y2="36" stroke="${c.dark}" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+    <line x1="42" y1="28" x2="45" y2="36" stroke="${c.dark}" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+    <line x1="58" y1="28" x2="55" y2="36" stroke="${c.dark}" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+    <ellipse cx="35" cy="58" rx="10" ry="11" fill="white"/>
+    <ellipse cx="65" cy="58" rx="10" ry="11" fill="white"/>
+    <ellipse cx="35" cy="60" rx="6" ry="8" fill="${c.eye}"/>
+    <ellipse cx="65" cy="60" rx="6" ry="8" fill="${c.eye}"/>
+    <circle cx="35" cy="60" r="4" fill="#111"/>
+    <circle cx="65" cy="60" r="4" fill="#111"/>
+    <circle cx="37" cy="58" r="1.5" fill="white"/>
+    <circle cx="67" cy="58" r="1.5" fill="white"/>
+    <polygon points="50,69 46,74 54,74" fill="#FF88AA"/>
+    <path d="M46,74 Q50,79 54,74" fill="none" stroke="#DD5577" stroke-width="1.5"/>
+    <line x1="8"  y1="69" x2="42" y2="71" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+    <line x1="8"  y1="75" x2="42" y2="73" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+    <line x1="58" y1="71" x2="92" y2="69" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+    <line x1="58" y1="73" x2="92" y2="75" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+  </svg>`;
+}
 
-const BOSS_RABBIT_PHOTO = 'https://cdn.pixabay.com/photo/2018/08/22/22/15/rabbit-3624771_640.jpg';
-const PLAYER_CAT_PHOTO = 'https://cdn.pixabay.com/photo/2024/02/28/07/42/european-shorthair-8601492_640.jpg';
+function makeDogSVG(idx) {
+  const c = DOG_VARIANTS[idx % DOG_VARIANTS.length];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect x="2"  y="32" width="20" height="44" rx="10" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <rect x="78" y="32" width="20" height="44" rx="10" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <circle cx="50" cy="58" r="36" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <ellipse cx="50" cy="72" rx="20" ry="13" fill="${c.snout}"/>
+    <ellipse cx="36" cy="54" rx="9" ry="10" fill="white"/>
+    <ellipse cx="64" cy="54" rx="9" ry="10" fill="white"/>
+    <circle cx="36" cy="54" r="6"   fill="${c.eye}"/>
+    <circle cx="64" cy="54" r="6"   fill="${c.eye}"/>
+    <circle cx="36" cy="54" r="3.5" fill="#111"/>
+    <circle cx="64" cy="54" r="3.5" fill="#111"/>
+    <circle cx="38" cy="52" r="1.5" fill="white"/>
+    <circle cx="66" cy="52" r="1.5" fill="white"/>
+    <ellipse cx="50" cy="67" rx="6" ry="4" fill="#222"/>
+    <line x1="50" y1="71" x2="50" y2="75" stroke="${c.dark}" stroke-width="1.5"/>
+    <path d="M42,75 Q50,82 58,75" fill="${c.snout}" stroke="${c.dark}" stroke-width="1.5"/>
+    ${c.tongue ? `<ellipse cx="50" cy="79" rx="7" ry="5" fill="#FF6699"/>` : ''}
+  </svg>`;
+}
+
+function makeRabbitSVG() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <ellipse cx="34" cy="20" rx="10" ry="23" fill="white" stroke="#FFBBCC" stroke-width="2"/>
+    <ellipse cx="66" cy="20" rx="10" ry="23" fill="white" stroke="#FFBBCC" stroke-width="2"/>
+    <ellipse cx="34" cy="20" rx="5.5" ry="19" fill="#FFCCDD"/>
+    <ellipse cx="66" cy="20" rx="5.5" ry="19" fill="#FFCCDD"/>
+    <circle cx="50" cy="65" r="34" fill="white" stroke="#FFBBCC" stroke-width="2"/>
+    <ellipse cx="30" cy="72" rx="8" ry="5" fill="#FFCCDD" opacity=".5"/>
+    <ellipse cx="70" cy="72" rx="8" ry="5" fill="#FFCCDD" opacity=".5"/>
+    <ellipse cx="36" cy="62" rx="9" ry="10" fill="white"/>
+    <ellipse cx="64" cy="62" rx="9" ry="10" fill="white"/>
+    <circle cx="36" cy="63" r="6"   fill="#CC0044"/>
+    <circle cx="64" cy="63" r="6"   fill="#CC0044"/>
+    <circle cx="36" cy="63" r="3.5" fill="#880022"/>
+    <circle cx="64" cy="63" r="3.5" fill="#880022"/>
+    <circle cx="38" cy="61" r="1.5" fill="white"/>
+    <circle cx="66" cy="61" r="1.5" fill="white"/>
+    <ellipse cx="50" cy="73" rx="6" ry="4" fill="#FF99AA"/>
+    <path d="M44,77 Q50,83 56,77" fill="none" stroke="#FF7799" stroke-width="1.5"/>
+    <line x1="10" y1="73" x2="42" y2="75" stroke="#FFBBCC" stroke-width="1.5" opacity=".7"/>
+    <line x1="10" y1="79" x2="42" y2="77" stroke="#FFBBCC" stroke-width="1.5" opacity=".7"/>
+    <line x1="58" y1="75" x2="90" y2="73" stroke="#FFBBCC" stroke-width="1.5" opacity=".7"/>
+    <line x1="58" y1="77" x2="90" y2="79" stroke="#FFBBCC" stroke-width="1.5" opacity=".7"/>
+  </svg>`;
+}
+
+function makeBossRabbitSVG() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <polygon points="28,32 38,14 50,26 62,14 72,32" fill="#FFD700" stroke="#CC9900" stroke-width="1.5"/>
+    <circle cx="38" cy="14" r="3" fill="#FF3333"/>
+    <circle cx="50" cy="26" r="3" fill="#4444FF"/>
+    <circle cx="62" cy="14" r="3" fill="#33FF33"/>
+    <ellipse cx="28" cy="27" rx="10" ry="22" fill="#1A1A3E" stroke="#6644AA" stroke-width="2"/>
+    <ellipse cx="72" cy="27" rx="10" ry="22" fill="#1A1A3E" stroke="#6644AA" stroke-width="2"/>
+    <ellipse cx="28" cy="27" rx="5"  ry="18" fill="#880000"/>
+    <ellipse cx="72" cy="27" rx="5"  ry="18" fill="#880000"/>
+    <circle cx="50" cy="66" r="34" fill="#1A1A3E" stroke="#6644AA" stroke-width="2"/>
+    <circle cx="35" cy="61" r="12" fill="#FF0000" opacity=".25"/>
+    <circle cx="65" cy="61" r="12" fill="#FF0000" opacity=".25"/>
+    <ellipse cx="35" cy="61" rx="10" ry="10" fill="white"/>
+    <ellipse cx="65" cy="61" rx="10" ry="10" fill="white"/>
+    <circle cx="35" cy="61" r="7" fill="#FF0000"/>
+    <circle cx="65" cy="61" r="7" fill="#FF0000"/>
+    <circle cx="35" cy="61" r="4" fill="#880000"/>
+    <circle cx="65" cy="61" r="4" fill="#880000"/>
+    <circle cx="37" cy="59" r="1.5" fill="white" opacity=".8"/>
+    <circle cx="67" cy="59" r="1.5" fill="white" opacity=".8"/>
+    <line x1="24" y1="50" x2="44" y2="56" stroke="#FF4444" stroke-width="3" stroke-linecap="round"/>
+    <line x1="76" y1="50" x2="56" y2="56" stroke="#FF4444" stroke-width="3" stroke-linecap="round"/>
+    <path d="M34,77 Q50,90 66,77" fill="none" stroke="#666" stroke-width="1.5"/>
+    <rect x="43" y="77" width="5" height="9" rx="2.5" fill="white"/>
+    <rect x="52" y="77" width="5" height="9" rx="2.5" fill="white"/>
+    <ellipse cx="50" cy="74" rx="6" ry="4" fill="#330033"/>
+  </svg>`;
+}
 
 // ══════════════════════════════════════════════
 // STAGE CONFIG
@@ -270,7 +384,6 @@ function playNote(freq, duration, type='sine', vol=0.12) {
   osc.stop(audioCtx.currentTime + duration);
 }
 
-// Cat BGM melody
 const BGM_NOTES = [
   523.25, 587.33, 659.25, 698.46, 783.99, 698.46, 659.25, 587.33,
   523.25, 493.88, 440.00, 493.88, 523.25, 587.33, 659.25, 523.25,
@@ -376,7 +489,7 @@ let gameRunning = false;
 let timeLeft = 0;
 let timerInterval = null;
 
-// Net
+// Glove
 let netX = 0, netY = 0;
 const netSpeed = 6;
 let keys = {};
@@ -494,31 +607,29 @@ function loadStage() {
   const total = cfg.cats + cfg.dogs + 1;
   const rabbitIdx = Math.floor(Math.random() * total);
 
-  let catCount = 0, dogCount = 0;
+  let catIdx = 0, dogIdx = 0;
   for (let i = 0; i < total; i++) {
     const isRabbit = i === rabbitIdx;
-    let type, photo;
+    let type;
     if (isRabbit) {
       type = 'rabbit';
-      photo = RABBIT_PHOTOS[Math.floor(Math.random() * RABBIT_PHOTOS.length)];
-    } else if (catCount < cfg.cats) {
+    } else if (catIdx < cfg.cats) {
       type = 'cat';
-      photo = CAT_PHOTOS[Math.floor(Math.random() * CAT_PHOTOS.length)];
-      catCount++;
     } else {
       type = 'dog';
-      photo = DOG_PHOTOS[Math.floor(Math.random() * DOG_PHOTOS.length)];
-      dogCount++;
     }
 
     const el = document.createElement('div');
     el.className = 'animal';
     el.style.cssText = `width:${sz}px;height:${sz}px;`;
-    const img = document.createElement('img');
-    img.src = photo;
-    img.alt = type;
-    img.draggable = false;
-    el.appendChild(img);
+
+    if (type === 'rabbit') {
+      el.innerHTML = makeRabbitSVG();
+    } else if (type === 'cat') {
+      el.innerHTML = makeCatSVG(catIdx++);
+    } else {
+      el.innerHTML = makeDogSVG(dogIdx++);
+    }
 
     const x = sz + Math.random() * (W - sz * 2.5);
     const y = HUD_H + sz + Math.random() * (H - HUD_H - sz * 2.5);
@@ -538,7 +649,7 @@ function loadStage() {
     animals.push(a);
   }
 
-  // Init net
+  // Init glove
   netX = W / 2;
   netY = H / 2;
   document.getElementById('net').style.display = 'block';
@@ -550,7 +661,7 @@ function loadStage() {
 
 function updateTimerDisplay() {
   const tb = document.getElementById('timer-box');
-  tb.textContent = '\u23F1\uFE0F ' + timeLeft + 's';
+  tb.textContent = '⏱️ ' + timeLeft + 's';
   tb.classList.toggle('urgent', timeLeft <= 10);
 }
 
@@ -657,6 +768,13 @@ let carrots = [];
 let bossCarrotInterval = null;
 let playerInvincible = false;
 
+// Ear spin state
+let bossEarSpinning = false;
+let bossEarSpinFrames = 0;
+let bossEarSpinAngle = 0;
+let bossEarCooldown = 200;
+let earSpinElements = [];
+
 function startBoss() {
   document.getElementById('game-screen').classList.add('hidden');
   document.getElementById('boss-screen').classList.remove('hidden');
@@ -671,30 +789,27 @@ function startBoss() {
   const area = document.getElementById('boss-area');
   area.innerHTML = '';
   carrots = [];
+  earSpinElements = [];
+  bossEarSpinning = false;
+  bossEarCooldown = 200;
 
   const W = window.innerWidth, H = window.innerHeight;
 
-  // Boss rabbit
+  // Boss rabbit (SVG illustration)
   const bossEl = document.createElement('div');
   bossEl.id = 'boss-rabbit';
   bossEl.style.cssText = 'width:120px;height:120px;';
-  const bossImg = document.createElement('img');
-  bossImg.src = BOSS_RABBIT_PHOTO;
-  bossImg.draggable = false;
-  bossEl.appendChild(bossImg);
+  bossEl.innerHTML = makeBossRabbitSVG();
   area.appendChild(bossEl);
   bossRabbit = { x: W/2 - 60, y: 80, hp: 10, dir: 1, el: bossEl };
   bossEl.style.left = bossRabbit.x + 'px';
   bossEl.style.top = bossRabbit.y + 'px';
 
-  // Player cat
+  // Player cat (SVG illustration)
   const catEl = document.createElement('div');
   catEl.id = 'player-cat';
   catEl.style.cssText = 'width:70px;height:70px;';
-  const catImg = document.createElement('img');
-  catImg.src = PLAYER_CAT_PHOTO;
-  catImg.draggable = false;
-  catEl.appendChild(catImg);
+  catEl.innerHTML = makeCatSVG(0);
   area.appendChild(catEl);
   playerCat = { x: W/2 - 35, y: H - 130, hp: 5, el: catEl };
   catEl.style.left = playerCat.x + 'px';
@@ -734,23 +849,51 @@ function spawnCarrot() {
   carrots.push(c);
 }
 
+function playerTakeDamage() {
+  playerCat.hp--;
+  playHit();
+  document.getElementById('player-hp-bar').style.width = Math.max(0, playerCat.hp / 5 * 100) + '%';
+
+  playerInvincible = true;
+  if (playerCat.el) playerCat.el.style.opacity = '0.4';
+  setTimeout(() => {
+    playerInvincible = false;
+    if (playerCat.el) playerCat.el.style.opacity = '1';
+  }, 1000);
+
+  if (playerCat.hp <= 0) {
+    bossRunning = false;
+    stopBossLoop();
+    stopBGM();
+    playGameOver();
+    document.getElementById('boss-screen').classList.add('hidden');
+    document.getElementById('gameover-text').textContent = 'ボスうさぎに負けちゃった...';
+    document.getElementById('gameover-screen').classList.remove('hidden');
+  }
+}
+
 function bossAttack() {
   if (!bossRunning) return;
   const dx = (playerCat.x + 35) - (bossRabbit.x + 60);
   const dy = (playerCat.y + 35) - (bossRabbit.y + 60);
   const dist = Math.hypot(dx, dy);
-  if (dist < 110) {
+  if (dist < 120) {
     bossRabbit.hp--;
     playPunch();
-    document.getElementById('boss-hp-bar').style.width = (bossRabbit.hp / 10 * 100) + '%';
-    const eff = document.createElement('div');
-    eff.className = 'punch-effect';
-    eff.textContent = '💥';
-    eff.style.left = (bossRabbit.x + 40) + 'px';
-    eff.style.top = (bossRabbit.y + 40) + 'px';
-    document.getElementById('boss-area').appendChild(eff);
-    setTimeout(() => eff.remove(), 400);
-    bossRabbit.x += (dx > 0 ? -30 : 30);
+    document.getElementById('boss-hp-bar').style.width = Math.max(0, bossRabbit.hp / 10 * 100) + '%';
+
+    // Cat scratch animation on player
+    if (playerCat.el) {
+      playerCat.el.classList.add('scratching');
+      setTimeout(() => playerCat.el && playerCat.el.classList.remove('scratching'), 300);
+    }
+
+    // Claw marks on boss
+    showScratch(bossRabbit.x + 60, bossRabbit.y + 60);
+
+    // Knockback — clamped to screen bounds
+    const W = window.innerWidth;
+    bossRabbit.x = Math.max(10, Math.min(W - 130, bossRabbit.x + (dx > 0 ? -35 : 35)));
 
     if (bossRabbit.hp <= 0) {
       bossRunning = false;
@@ -762,11 +905,53 @@ function bossAttack() {
   }
 }
 
+function showScratch(x, y) {
+  const area = document.getElementById('boss-area');
+  const eff = document.createElement('div');
+  eff.className = 'scratch-effect';
+  eff.innerHTML = `<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <line x1="14" y1="8"  x2="34" y2="72" stroke="#FF2222" stroke-width="6" stroke-linecap="round"/>
+    <line x1="29" y1="5"  x2="49" y2="75" stroke="#FF5555" stroke-width="5" stroke-linecap="round"/>
+    <line x1="44" y1="8"  x2="64" y2="72" stroke="#FF2222" stroke-width="6" stroke-linecap="round"/>
+  </svg>`;
+  eff.style.cssText = `position:absolute;left:${x-40}px;top:${y-40}px;z-index:35;pointer-events:none;`;
+  area.appendChild(eff);
+  setTimeout(() => eff.remove(), 500);
+}
+
+function startEarSpin() {
+  bossEarSpinning = true;
+  bossEarSpinFrames = 0;
+  bossEarSpinAngle = 0;
+
+  // Warning popup
+  const warn = document.createElement('div');
+  warn.className = 'popup';
+  warn.textContent = '👂 耳振り回し！ 👂';
+  warn.style.cssText = `left:${bossRabbit.x + 60}px;top:${bossRabbit.y + 145}px;color:#FFCC00;font-size:1.2rem;`;
+  document.getElementById('boss-area').appendChild(warn);
+  setTimeout(() => warn.remove(), 900);
+
+  const area = document.getElementById('boss-area');
+  for (let i = 0; i < 2; i++) {
+    const ear = document.createElement('div');
+    ear.className = 'ear-spin';
+    ear.textContent = '👂';
+    area.appendChild(ear);
+    earSpinElements.push(ear);
+  }
+}
+
+function stopEarSpin() {
+  bossEarSpinning = false;
+  earSpinElements.forEach(el => el.remove());
+  earSpinElements = [];
+}
+
 function bossLoop() {
   if (!bossRunning) return;
 
   const W = window.innerWidth, H = window.innerHeight;
-  const bossSpeed = 3;
 
   // Move player
   if (keys['ArrowLeft'] || keys['a'])  playerCat.x = Math.max(0, playerCat.x - 5);
@@ -776,14 +961,47 @@ function bossLoop() {
   playerCat.el.style.left = playerCat.x + 'px';
   playerCat.el.style.top = playerCat.y + 'px';
 
-  // Move boss
-  bossRabbit.x += bossRabbit.dir * bossSpeed;
-  if (bossRabbit.x < 10 || bossRabbit.x > W - 130) bossRabbit.dir *= -1;
+  // Move boss — clamped
+  bossRabbit.x += bossRabbit.dir * 3;
+  bossRabbit.x = Math.max(10, Math.min(W - 130, bossRabbit.x));
+  if (bossRabbit.x <= 10 || bossRabbit.x >= W - 130) bossRabbit.dir *= -1;
   const bob = Math.sin(Date.now() / 300) * 8;
   bossRabbit.el.style.left = bossRabbit.x + 'px';
   bossRabbit.el.style.top = (bossRabbit.y + bob) + 'px';
 
-  // Move carrots
+  // Ear spin cooldown
+  bossEarCooldown--;
+  if (bossEarCooldown <= 0 && !bossEarSpinning) {
+    bossEarCooldown = 300 + Math.floor(Math.random() * 120);
+    startEarSpin();
+  }
+
+  // Ear spin update
+  if (bossEarSpinning) {
+    bossEarSpinAngle += 0.12;
+    bossEarSpinFrames++;
+    const cx = bossRabbit.x + 60;
+    const cy = bossRabbit.y + 60;
+    for (let ei = 0; ei < earSpinElements.length; ei++) {
+      const a = bossEarSpinAngle + ei * Math.PI;
+      const ex = cx + Math.cos(a) * 90;
+      const ey = cy + Math.sin(a) * 90;
+      earSpinElements[ei].style.left = (ex - 20) + 'px';
+      earSpinElements[ei].style.top  = (ey - 20) + 'px';
+      earSpinElements[ei].style.transform = `rotate(${a + Math.PI/2}rad)`;
+
+      if (!playerInvincible) {
+        if (Math.hypot((playerCat.x + 35) - ex, (playerCat.y + 35) - ey) < 48) {
+          playerTakeDamage();
+          if (!bossRunning) return;
+          break;
+        }
+      }
+    }
+    if (bossEarSpinFrames > 150) stopEarSpin();
+  }
+
+  // Move carrots & collision
   for (let i = carrots.length - 1; i >= 0; i--) {
     const c = carrots[i];
     c.x += c.dx;
@@ -801,29 +1019,10 @@ function bossLoop() {
       const hx = (playerCat.x + 35) - c.x;
       const hy = (playerCat.y + 35) - c.y;
       if (Math.hypot(hx, hy) < 40) {
-        playerCat.hp--;
-        playHit();
-        document.getElementById('player-hp-bar').style.width = (playerCat.hp / 5 * 100) + '%';
         c.el.remove();
         carrots.splice(i, 1);
-
-        playerInvincible = true;
-        playerCat.el.style.opacity = '0.4';
-        setTimeout(() => {
-          playerInvincible = false;
-          if (playerCat.el) playerCat.el.style.opacity = '1';
-        }, 1000);
-
-        if (playerCat.hp <= 0) {
-          bossRunning = false;
-          stopBossLoop();
-          stopBGM();
-          playGameOver();
-          document.getElementById('boss-screen').classList.add('hidden');
-          document.getElementById('gameover-text').textContent = 'ボスうさぎに負けちゃった...';
-          document.getElementById('gameover-screen').classList.remove('hidden');
-          return;
-        }
+        playerTakeDamage();
+        if (!bossRunning) return;
       }
     }
   }
@@ -834,6 +1033,7 @@ function bossLoop() {
 function stopBossLoop() {
   if (bossAnimId) { cancelAnimationFrame(bossAnimId); bossAnimId = null; }
   if (bossCarrotInterval) { clearInterval(bossCarrotInterval); bossCarrotInterval = null; }
+  stopEarSpin();
 }
 
 // ══════════════════════════════════════════════
@@ -846,12 +1046,11 @@ function showEnding() {
 
   const scene = document.getElementById('ending-scene');
   scene.innerHTML = '';
-  const allPhotos = [...CAT_PHOTOS.slice(0,4), ...DOG_PHOTOS.slice(0,2), ...RABBIT_PHOTOS.slice(0,2)];
-  allPhotos.forEach(src => {
-    const img = document.createElement('img');
-    img.src = src;
-    img.className = 'ending-animal';
-    scene.appendChild(img);
+  ['🐱','🐱','🐱','🐱','🐶','🐶','🐰','🐰'].forEach(emoji => {
+    const span = document.createElement('span');
+    span.className = 'ending-animal';
+    span.textContent = emoji;
+    scene.appendChild(span);
   });
 
   for (let i = 0; i < 30; i++) {
