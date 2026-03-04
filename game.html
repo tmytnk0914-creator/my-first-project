@@ -6,444 +6,892 @@
   <title>うさぎを探せ！🐰</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { width: 100vw; height: 100vh; overflow: hidden; font-family: 'Hiragino Maru Gothic Pro', 'BIZ UDGothic', sans-serif; }
+    body { width: 100vw; height: 100vh; overflow: hidden; font-family: 'Hiragino Maru Gothic Pro', 'BIZ UDGothic', sans-serif; user-select: none; }
 
-    /* ── SCREENS ── */
-    .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; z-index: 200; }
+    .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 200; }
     .screen.hidden { display: none; }
 
-    /* ── START ── */
+    /* START */
     #start-screen { background: linear-gradient(155deg, #FFE0F0 0%, #E8F0FF 55%, #FFF5E0 100%); }
-    .game-title { font-size: 2.8rem; font-weight: 900; color: #FF5588; text-shadow: 3px 3px 0 #FFAABB, 0 0 20px rgba(255,85,136,.3); letter-spacing: .06em; }
+    .game-title { font-size: 2.8rem; font-weight: 900; color: #FF5588; text-shadow: 3px 3px 0 #FFAABB, 0 0 20px rgba(255,85,136,.3); }
     .game-subtitle { font-size: 1rem; color: #FF88AA; }
-    .start-desc { font-size: .9rem; color: #FFAACC; background: rgba(255,255,255,.65); padding: 10px 22px; border-radius: 14px; text-align: center; line-height: 1.7; }
+    .start-desc { font-size: .85rem; color: #FFAACC; background: rgba(255,255,255,.65); padding: 10px 22px; border-radius: 14px; text-align: center; line-height: 1.7; max-width: 500px; }
 
-    /* ── BUTTONS ── */
     .btn { padding: 13px 38px; font-size: 1.25rem; font-weight: bold; border: none; border-radius: 50px; cursor: pointer; color: white; letter-spacing: .05em; box-shadow: 0 5px 15px rgba(0,0,0,.15); transition: transform .15s, box-shadow .15s; }
     .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.22); }
     .btn:active { transform: translateY(1px); }
     .btn-pink { background: linear-gradient(135deg, #FF7AAB, #FF4488); }
+    .btn-gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
 
-    /* ── GAME SCREEN ── */
+    /* GAME */
     #game-screen { position: fixed; inset: 0; z-index: 100; }
     #game-screen.hidden { display: none; }
-    #game-area { width: 100%; height: 100%; position: relative; overflow: hidden; background: linear-gradient(180deg, #FFF0F8 0%, #F0F8FF 60%, #F2FFF0 100%); }
+    #game-area { width: 100%; height: 100%; position: relative; overflow: hidden; }
 
     /* HUD */
-    #hud { position: fixed; top: 0; left: 0; right: 0; padding: 12px 22px; display: flex; justify-content: space-between; align-items: center; z-index: 150; background: rgba(255,255,255,.88); backdrop-filter: blur(14px); box-shadow: 0 2px 16px rgba(255,100,150,.12); }
-    #stage-label { font-size: 1.2rem; font-weight: bold; color: #FF5588; }
-    #hint-box { font-size: .9rem; color: #FF88AA; background: #FFF0F6; padding: 5px 15px; border-radius: 20px; border: 1.5px solid #FFBBCC; }
-    .stage-dots { display: flex; gap: 8px; }
-    .dot { width: 13px; height: 13px; border-radius: 50%; background: #FFDDE8; border: 2px solid #FFAABB; transition: all .3s; }
+    #hud { position: fixed; top: 0; left: 0; right: 0; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; z-index: 150; background: rgba(255,255,255,.9); backdrop-filter: blur(14px); box-shadow: 0 2px 16px rgba(255,100,150,.12); flex-wrap: wrap; gap: 6px; }
+    #stage-label { font-size: 1.1rem; font-weight: bold; color: #FF5588; }
+    #hint-box { font-size: .85rem; color: #FF88AA; background: #FFF0F6; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #FFBBCC; }
+    #timer-box { font-size: 1.1rem; font-weight: bold; color: #FF3366; background: #FFF0F4; padding: 4px 14px; border-radius: 20px; border: 2px solid #FF6699; min-width: 80px; text-align: center; }
+    #timer-box.urgent { animation: timerPulse .5s infinite alternate; border-color: #FF0033; color: #FF0033; }
+    @keyframes timerPulse { from { transform: scale(1); } to { transform: scale(1.08); } }
+    .stage-dots { display: flex; gap: 5px; flex-wrap: wrap; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; background: #FFDDE8; border: 2px solid #FFAABB; transition: all .3s; }
     .dot.done { background: #FF5588; border-color: #FF2266; }
     .dot.current { background: #FF99BB; border-color: #FF5588; box-shadow: 0 0 6px #FF5588; }
+    .dot.boss { background: #FFD700; border-color: #FFA500; }
 
-    /* ── ANIMAL ── */
-    .animal { position: absolute; cursor: pointer; user-select: none; z-index: 10; }
-    .animal:hover svg { filter: drop-shadow(0 0 10px rgba(255,160,100,.7)); }
+    /* NET (player) */
+    #net { position: absolute; z-index: 50; pointer-events: none; font-size: 48px; transition: none; }
+    #net.catching { animation: netSwing .3s ease; }
+    @keyframes netSwing { 0%{transform:rotate(0)} 50%{transform:rotate(-30deg) scale(1.2)} 100%{transform:rotate(0)} }
+
+    /* ANIMAL */
+    .animal { position: absolute; z-index: 10; transition: none; cursor: pointer; }
+    .animal img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 3px solid rgba(255,255,255,.8); box-shadow: 0 2px 8px rgba(0,0,0,.2); pointer-events: none; }
     .animal.wrong { animation: wrongShake .4s ease; }
-    @keyframes wrongShake { 0%,100%{transform:translateX(0) var(--flip)} 25%{transform:translateX(-6px) var(--flip)} 75%{transform:translateX(6px) var(--flip)} }
+    @keyframes wrongShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
-    /* ── POPUP ── */
-    .popup { position: fixed; pointer-events: none; font-size: 1rem; font-weight: bold; z-index: 300; white-space: nowrap; animation: popupFloat .9s ease-out forwards; }
+    /* POPUP */
+    .popup { position: fixed; pointer-events: none; font-size: 1.1rem; font-weight: bold; z-index: 300; white-space: nowrap; animation: popupFloat .9s ease-out forwards; }
     @keyframes popupFloat { 0%{transform:translateX(-50%) scale(.5); opacity:1} 100%{transform:translateX(-50%) translateY(-55px) scale(1.1); opacity:0} }
 
-    /* ── STAGE CLEAR ── */
+    /* STAGE CLEAR */
     #stage-clear-screen { background: rgba(255,228,244,.97); backdrop-filter: blur(14px); }
-    .clear-big { font-size: 3rem; font-weight: 900; color: #FF5588; text-shadow: 3px 3px 0 #FFAABB; animation: clearPop .5s cubic-bezier(.34,1.56,.64,1); }
-    .clear-sub { font-size: 1.05rem; color: #FF88AA; }
+    .clear-big { font-size: 2.5rem; font-weight: 900; color: #FF5588; text-shadow: 3px 3px 0 #FFAABB; animation: clearPop .5s cubic-bezier(.34,1.56,.64,1); }
+    .clear-sub { font-size: 1rem; color: #FF88AA; }
     @keyframes clearPop { from{transform:scale(0) rotate(-12deg)} to{transform:scale(1) rotate(0)} }
 
-    /* ── GAME CLEAR ── */
-    #game-clear-screen { background: linear-gradient(155deg, #FFE066 0%, #FFB0D8 50%, #B0D8FF 100%); }
-    .final-title { font-size: 2.5rem; font-weight: 900; color: #FF3366; text-shadow: 3px 3px 0 #FFAA99; animation: clearPop .5s ease; }
-    .final-sub { font-size: 1rem; color: #FF6688; }
-    .hearts { font-size: 1.8rem; letter-spacing: .08em; }
+    /* GAME OVER */
+    #gameover-screen { background: rgba(40,0,20,.92); backdrop-filter: blur(14px); }
+    .gameover-title { font-size: 2.5rem; font-weight: 900; color: #FF4466; text-shadow: 0 0 30px rgba(255,0,50,.5); }
+    .gameover-sub { font-size: 1rem; color: #FFAACC; }
 
-    /* ── SPARKLE ── */
+    /* BOSS */
+    #boss-screen { position: fixed; inset: 0; z-index: 100; }
+    #boss-screen.hidden { display: none; }
+    #boss-area { width: 100%; height: 100%; position: relative; overflow: hidden; background: linear-gradient(180deg, #1a0a2e 0%, #2d1b4e 40%, #4a2c6e 100%); }
+    #boss-hud { position: fixed; top: 0; left: 0; right: 0; padding: 10px 18px; z-index: 150; background: rgba(0,0,0,.7); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; }
+    .hp-bar-container { width: 200px; height: 20px; background: #333; border-radius: 10px; overflow: hidden; border: 2px solid #666; }
+    .hp-bar { height: 100%; border-radius: 8px; transition: width .3s; }
+    .hp-bar.boss-hp { background: linear-gradient(90deg, #FF4444, #FF8800); }
+    .hp-bar.player-hp { background: linear-gradient(90deg, #44FF44, #88FF00); }
+    .hp-label { color: white; font-size: .85rem; font-weight: bold; margin-bottom: 3px; }
+
+    #boss-rabbit { position: absolute; z-index: 20; }
+    #boss-rabbit img { width: 100%; height: 100%; object-fit: cover; border-radius: 20%; border: 4px solid #FFD700; box-shadow: 0 0 30px rgba(255,215,0,.5); }
+    .carrot { position: absolute; font-size: 28px; z-index: 15; pointer-events: none; }
+    #player-cat { position: absolute; z-index: 25; }
+    #player-cat img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 3px solid #44FF44; box-shadow: 0 0 15px rgba(0,255,0,.3); pointer-events: none; }
+    .punch-effect { position: absolute; font-size: 36px; z-index: 30; pointer-events: none; animation: punchPop .4s ease-out forwards; }
+    @keyframes punchPop { 0%{transform:scale(0);opacity:1} 100%{transform:scale(2);opacity:0} }
+
+    /* ENDING */
+    #ending-screen.hidden { display: none; }
+    #ending-screen { background: linear-gradient(180deg, #FFE0F0, #FFF5E0, #E0F0FF); }
+    .ending-scene { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
+    .ending-animal { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,.15); animation: endingBounce 1s ease infinite; }
+    .ending-animal:nth-child(2n) { animation-delay: .2s; }
+    .ending-animal:nth-child(3n) { animation-delay: .4s; }
+    @keyframes endingBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .ending-heart { font-size: 2rem; animation: heartFloat 2s ease infinite; }
+    @keyframes heartFloat { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-8px) scale(1.1)} }
+    .final-title { font-size: 2.2rem; font-weight: 900; color: #FF3366; text-shadow: 3px 3px 0 #FFAA99; animation: clearPop .5s ease; }
+    .final-sub { font-size: 1rem; color: #FF6688; }
+
+    /* SPARKLE */
     .sparkle { position: fixed; pointer-events: none; z-index: 400; animation: sparkleFly 1.1s ease-out forwards; }
     @keyframes sparkleFly { 0%{transform:scale(0) translateY(0); opacity:1} 100%{transform:scale(1.2) translateY(80px); opacity:0} }
+
+    /* MUTE BTN */
+    #mute-btn { position: fixed; bottom: 12px; right: 12px; z-index: 500; background: rgba(255,255,255,.8); border: 2px solid #FFAABB; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════
-     START SCREEN
-════════════════════════════════ -->
+<!-- START SCREEN -->
 <div id="start-screen" class="screen">
-  <svg width="150" height="140" viewBox="0 0 150 140" style="filter:drop-shadow(0 8px 22px rgba(255,100,150,.35))">
-    <polygon points="30,66 52,12 70,66" fill="#F4A460"/>
-    <polygon points="38,63 52,29 64,63" fill="#FFB6C1"/>
-    <polygon points="80,66 98,12 120,66" fill="#F4A460"/>
-    <polygon points="86,63 98,29 112,63" fill="#FFB6C1"/>
-    <ellipse cx="75" cy="88" rx="58" ry="52" fill="#F4A460"/>
-    <ellipse cx="54" cy="80" rx="11" ry="13" fill="white"/>
-    <ellipse cx="96" cy="80" rx="11" ry="13" fill="white"/>
-    <ellipse cx="56" cy="82" rx="8" ry="10" fill="#2A1800"/>
-    <ellipse cx="98" cy="82" rx="8" ry="10" fill="#2A1800"/>
-    <circle cx="59" cy="78" r="3.5" fill="white"/>
-    <circle cx="101" cy="78" r="3.5" fill="white"/>
-    <ellipse cx="37" cy="98" rx="14" ry="8" fill="#FFB6C1" opacity=".6"/>
-    <ellipse cx="113" cy="98" rx="14" ry="8" fill="#FFB6C1" opacity=".6"/>
-    <ellipse cx="75" cy="98" rx="7" ry="5" fill="#FF9999"/>
-    <path d="M68,105 Q75,115 82,105" fill="none" stroke="#D07070" stroke-width="2" stroke-linecap="round"/>
-    <line x1="14" y1="93" x2="63" y2="99" stroke="#99999980" stroke-width="1.5"/>
-    <line x1="14" y1="103" x2="63" y2="103" stroke="#99999980" stroke-width="1.5"/>
-    <line x1="87" y1="99" x2="136" y2="93" stroke="#99999980" stroke-width="1.5"/>
-    <line x1="87" y1="103" x2="136" y2="103" stroke="#99999980" stroke-width="1.5"/>
-    <text x="67" y="55" font-size="14" fill="#FF6699">♡</text>
-  </svg>
+  <div style="font-size:80px">🐰</div>
   <div class="game-title">うさぎを探せ！</div>
-  <div class="game-subtitle">🐱 猫たちの中にまぎれたうさぎを見つけよう！ 🐰</div>
-  <div class="start-desc">全3ステージ、だんだん難しくなるよ 🌟<br>うさぎを見つけてクリック！</div>
+  <div class="game-subtitle">🐱 猫と犬の中にまぎれたうさぎを捕まえよう！ 🐶</div>
+  <div class="start-desc">
+    全10ステージ（ステージ10はボス戦！）<br>
+    🕹️ 方向キーで網を動かしてスペースで捕獲！<br>
+    🖱️ マウスクリックでもOK！<br>
+    ⏱️ 制限時間内にうさぎを見つけよう！
+  </div>
   <button class="btn btn-pink" onclick="startGame()">▶ START</button>
 </div>
 
-<!-- ════════════════════════════════
-     GAME SCREEN
-════════════════════════════════ -->
+<!-- GAME SCREEN -->
 <div id="game-screen" class="hidden">
   <div id="game-area"></div>
+  <div id="net">🥅</div>
   <div id="hud">
     <div id="stage-label">ステージ 1</div>
-    <div id="hint-box">🐰 うさぎを探してクリック！</div>
-    <div class="stage-dots">
-      <div class="dot current" id="dot-0"></div>
-      <div class="dot" id="dot-1"></div>
-      <div class="dot" id="dot-2"></div>
+    <div id="hint-box">🐰 うさぎを捕まえよう！</div>
+    <div id="timer-box">60s</div>
+    <div class="stage-dots" id="stage-dots"></div>
+  </div>
+</div>
+
+<!-- STAGE CLEAR -->
+<div id="stage-clear-screen" class="screen hidden">
+  <div class="clear-big" id="stage-clear-text">ステージ 1 クリア！</div>
+  <div class="clear-sub" id="clear-time-text">残り時間: 30秒</div>
+  <div class="clear-sub">うさぎを捕まえたよ！🐰✨</div>
+  <button class="btn btn-pink" onclick="nextStage()">次のステージへ ▶</button>
+</div>
+
+<!-- GAME OVER -->
+<div id="gameover-screen" class="screen hidden">
+  <div class="gameover-title">⏱️ タイムアップ！</div>
+  <div class="gameover-sub" id="gameover-text">うさぎに逃げられちゃった...</div>
+  <button class="btn btn-pink" onclick="retryStage()">🔄 もう一度</button>
+  <button class="btn btn-gold" onclick="resetGame()">🏠 タイトルへ</button>
+</div>
+
+<!-- BOSS SCREEN -->
+<div id="boss-screen" class="hidden">
+  <div id="boss-area"></div>
+  <div id="boss-hud">
+    <div>
+      <div class="hp-label">🐱 ネコ HP</div>
+      <div class="hp-bar-container"><div class="hp-bar player-hp" id="player-hp-bar" style="width:100%"></div></div>
+    </div>
+    <div style="color:#FFD700;font-weight:bold;font-size:1.2rem">⚔️ BOSS BATTLE ⚔️</div>
+    <div>
+      <div class="hp-label">🐰 ボスうさぎ HP</div>
+      <div class="hp-bar-container"><div class="hp-bar boss-hp" id="boss-hp-bar" style="width:100%"></div></div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════
-     STAGE CLEAR
-════════════════════════════════ -->
-<div id="stage-clear-screen" class="screen hidden">
-  <div class="clear-big" id="stage-clear-text">ステージ 1 クリア！</div>
-  <div class="clear-sub">うさぎを見つけたよ！🐰✨</div>
-  <button class="btn btn-pink" onclick="nextStage()">次のステージへ ▶</button>
-</div>
-
-<!-- ════════════════════════════════
-     GAME CLEAR
-════════════════════════════════ -->
-<div id="game-clear-screen" class="screen hidden">
-  <div class="final-title">🎊 全ステージクリア！ 🎊</div>
-  <div class="final-sub">うさぎを全部見つけたね！すごい！</div>
-
-  <!-- SUPER CUTE CAT -->
-  <svg width="215" height="225" viewBox="0 0 215 225" style="filter:drop-shadow(0 14px 28px rgba(255,100,150,.4))">
-    <!-- body -->
-    <ellipse cx="107" cy="185" rx="54" ry="38" fill="#F4A460"/>
-    <!-- tail -->
-    <path d="M153,175 Q200,148 190,120 Q180,102 158,118" fill="none" stroke="#F4A460" stroke-width="15" stroke-linecap="round"/>
-    <!-- paws -->
-    <ellipse cx="83" cy="215" rx="19" ry="10" fill="#F4A460"/>
-    <ellipse cx="131" cy="215" rx="19" ry="10" fill="#F4A460"/>
-    <!-- ears -->
-    <polygon points="42,82 66,22 90,82" fill="#F4A460"/>
-    <polygon points="51,79 66,42 81,79" fill="#FFB6C1"/>
-    <polygon points="124,82 148,22 172,82" fill="#F4A460"/>
-    <polygon points="133,79 148,42 163,79" fill="#FFB6C1"/>
-    <!-- head -->
-    <ellipse cx="107" cy="112" rx="65" ry="62" fill="#F4A460"/>
-    <!-- left eye -->
-    <ellipse cx="81" cy="100" rx="17" ry="20" fill="white"/>
-    <ellipse cx="84" cy="103" rx="13" ry="16" fill="#2A1800"/>
-    <circle cx="83" cy="93" r="5.5" fill="#6688FF" opacity=".35"/>
-    <circle cx="90" cy="98" r="5.5" fill="white"/>
-    <circle cx="81" cy="109" r="2.5" fill="white"/>
-    <!-- right eye -->
-    <ellipse cx="133" cy="100" rx="17" ry="20" fill="white"/>
-    <ellipse cx="136" cy="103" rx="13" ry="16" fill="#2A1800"/>
-    <circle cx="135" cy="93" r="5.5" fill="#6688FF" opacity=".35"/>
-    <circle cx="142" cy="98" r="5.5" fill="white"/>
-    <circle cx="133" cy="109" r="2.5" fill="white"/>
-    <!-- blush -->
-    <ellipse cx="62" cy="118" rx="19" ry="12" fill="#FFB6C1" opacity=".72"/>
-    <ellipse cx="152" cy="118" rx="19" ry="12" fill="#FFB6C1" opacity=".72"/>
-    <!-- nose -->
-    <polygon points="107,121 101,130 113,130" fill="#FF9999"/>
-    <!-- mouth -->
-    <path d="M93,132 Q107,146 121,132" fill="none" stroke="#D07070" stroke-width="2.5" stroke-linecap="round"/>
-    <!-- whiskers -->
-    <line x1="26" y1="115" x2="88" y2="122" stroke="#99999990" stroke-width="1.8"/>
-    <line x1="26" y1="126" x2="88" y2="126" stroke="#99999990" stroke-width="1.8"/>
-    <line x1="126" y1="122" x2="188" y2="115" stroke="#99999990" stroke-width="1.8"/>
-    <line x1="126" y1="126" x2="188" y2="126" stroke="#99999990" stroke-width="1.8"/>
-    <!-- heart -->
-    <text x="98" y="72" font-size="22" fill="#FF6699">♡</text>
-    <!-- sparkles -->
-    <text x="10" y="48" font-size="17" fill="#FFD700">✦</text>
-    <text x="190" y="48" font-size="17" fill="#FFD700">✦</text>
-    <text x="4" y="138" font-size="12" fill="#FF99CC">✦</text>
-    <text x="200" y="138" font-size="12" fill="#FF99CC">✦</text>
-    <text x="28" y="24" font-size="14" fill="#FFD700">★</text>
-    <text x="172" y="24" font-size="14" fill="#FFD700">★</text>
-  </svg>
-
-  <div class="hearts">🐱💕🐱💕🐱</div>
-  <div class="final-sub">全3ステージ制覇！うさぎ探しの達人だね！</div>
+<!-- ENDING -->
+<div id="ending-screen" class="screen hidden">
+  <div class="final-title">🎊 おめでとう！！ 🎊</div>
+  <div class="final-sub">ボスうさぎを倒した！</div>
+  <div class="ending-scene" id="ending-scene"></div>
+  <div class="ending-heart">💕 みんな なかよし 💕</div>
+  <div class="final-sub">猫も犬もうさぎも、みんな友達になったよ！</div>
+  <div style="font-size:1.5rem;margin:8px 0">🐱🐶🐰❤️🐱🐶🐰</div>
   <button class="btn btn-pink" onclick="resetGame()">↺ もう一度遊ぶ</button>
 </div>
 
-<!-- ════════════════════════════════
-     SCRIPT
-════════════════════════════════ -->
+<!-- MUTE -->
+<button id="mute-btn" onclick="toggleMute()">🔊</button>
+
 <script>
-  // ─── CONFIG ───────────────────────────────────
-  const STAGES = [
-    { catCount:  6, size: 70, speed: 1.3, turnChance: 0.003, name: 'ステージ 1' },
-    { catCount: 14, size: 58, speed: 1.9, turnChance: 0.006, name: 'ステージ 2' },
-    { catCount: 26, size: 46, speed: 2.4, turnChance: 0.011, name: 'ステージ 3' },
-  ];
+// ══════════════════════════════════════════════
+// REAL PHOTO URLs (Pixabay - free to use)
+// ══════════════════════════════════════════════
+const CAT_PHOTOS = [
+  'https://cdn.pixabay.com/photo/2024/02/28/07/42/european-shorthair-8601492_640.jpg',
+  'https://cdn.pixabay.com/photo/2017/02/20/18/03/cat-2083492_640.jpg',
+  'https://cdn.pixabay.com/photo/2019/11/08/11/36/cat-4611189_640.jpg',
+  'https://cdn.pixabay.com/photo/2017/11/09/21/41/cat-2934720_640.jpg',
+  'https://cdn.pixabay.com/photo/2016/12/30/17/27/cat-1941089_640.jpg',
+  'https://cdn.pixabay.com/photo/2023/09/03/12/11/cat-8230767_640.jpg',
+  'https://cdn.pixabay.com/photo/2016/01/20/13/05/cat-1151519_640.jpg',
+  'https://cdn.pixabay.com/photo/2018/01/28/12/37/cat-3113513_640.jpg',
+];
 
-  const CAT_COLORS = [
-    { body:'#F4A460', ear:'#C87838', inner:'#FFB6C1' }, // orange
-    { body:'#AAAAAA', ear:'#808080', inner:'#FFB6C1' }, // gray
-    { body:'#303030', ear:'#1A1A1A', inner:'#FF88CC' }, // black
-    { body:'#F5F5F0', ear:'#D0D0C8', inner:'#FFB6C1' }, // white
-    { body:'#C49060', ear:'#9A6840', inner:'#FFB6C1' }, // brown
-  ];
+const DOG_PHOTOS = [
+  'https://cdn.pixabay.com/photo/2016/12/13/05/15/puppy-1903313_640.jpg',
+  'https://cdn.pixabay.com/photo/2016/02/18/18/37/puppy-1207816_640.jpg',
+  'https://cdn.pixabay.com/photo/2018/03/31/06/31/dog-3277416_640.jpg',
+  'https://cdn.pixabay.com/photo/2019/08/19/07/45/dog-4415649_640.jpg',
+  'https://cdn.pixabay.com/photo/2017/09/25/13/12/puppy-2785074_640.jpg',
+  'https://cdn.pixabay.com/photo/2016/05/09/10/42/weimaraner-1381186_640.jpg',
+];
 
-  const HUD_H = 58;
-  let currentStage = 0;
-  let animals = [];
-  let animId = null;
-  let gameRunning = false;
+const RABBIT_PHOTOS = [
+  'https://cdn.pixabay.com/photo/2018/08/22/22/15/rabbit-3624771_640.jpg',
+  'https://cdn.pixabay.com/photo/2017/01/26/18/39/rabbit-2010247_640.jpg',
+  'https://cdn.pixabay.com/photo/2016/09/04/11/38/rabbit-1643958_640.jpg',
+  'https://cdn.pixabay.com/photo/2015/05/08/12/43/hare-758482_640.jpg',
+];
 
-  // ─── SVG: CAT ─────────────────────────────────
-  function catSVG(c, s) {
-    const hx=s*.5, hy=s*.52, hr=s*.34, vr=s*.30;
-    const ex1=hx-hr*.43, ey=hy-vr*.12, er=hr*.175, evr=vr*.215;
-    const ex2=hx+hr*.43;
-    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
-      <!-- ears -->
-      <polygon points="${hx-hr*.55},${hy-vr*.72} ${hx-hr*.72},${hy-vr*1.28} ${hx-hr*.18},${hy-vr*.77}" fill="${c.ear}"/>
-      <polygon points="${hx-hr*.56},${hy-vr*.74} ${hx-hr*.69},${hy-vr*1.1} ${hx-hr*.23},${hy-vr*.79}" fill="${c.inner}"/>
-      <polygon points="${hx+hr*.18},${hy-vr*.77} ${hx+hr*.72},${hy-vr*1.28} ${hx+hr*.55},${hy-vr*.72}" fill="${c.ear}"/>
-      <polygon points="${hx+hr*.23},${hy-vr*.79} ${hx+hr*.69},${hy-vr*1.1} ${hx+hr*.56},${hy-vr*.74}" fill="${c.inner}"/>
-      <!-- body peek -->
-      <ellipse cx="${hx}" cy="${s*.9}" rx="${hr*.72}" ry="${s*.1}" fill="${c.body}"/>
-      <!-- head -->
-      <ellipse cx="${hx}" cy="${hy}" rx="${hr}" ry="${vr}" fill="${c.body}"/>
-      <!-- eyes -->
-      <ellipse cx="${ex1}" cy="${ey}" rx="${er}" ry="${evr}" fill="white"/>
-      <ellipse cx="${ex2}" cy="${ey}" rx="${er}" ry="${evr}" fill="white"/>
-      <ellipse cx="${ex1+er*.1}" cy="${ey+evr*.1}" rx="${er*.72}" ry="${evr*.72}" fill="#2A1800"/>
-      <ellipse cx="${ex2+er*.1}" cy="${ey+evr*.1}" rx="${er*.72}" ry="${evr*.72}" fill="#2A1800"/>
-      <circle cx="${ex1-er*.25}" cy="${ey-evr*.22}" r="${er*.34}" fill="white"/>
-      <circle cx="${ex2-er*.25}" cy="${ey-evr*.22}" r="${er*.34}" fill="white"/>
-      <!-- blush -->
-      <ellipse cx="${hx-hr*.68}" cy="${hy+vr*.24}" rx="${hr*.2}" ry="${vr*.15}" fill="#FFB6C1" opacity=".6"/>
-      <ellipse cx="${hx+hr*.68}" cy="${hy+vr*.24}" rx="${hr*.2}" ry="${vr*.15}" fill="#FFB6C1" opacity=".6"/>
-      <!-- nose -->
-      <ellipse cx="${hx}" cy="${hy+vr*.33}" rx="${hr*.1}" ry="${vr*.08}" fill="#FF9999"/>
-      <!-- mouth -->
-      <path d="M${hx-hr*.15},${hy+vr*.44} Q${hx},${hy+vr*.6} ${hx+hr*.15},${hy+vr*.44}" fill="none" stroke="#D07070" stroke-width="${s*.013}" stroke-linecap="round"/>
-      <!-- whiskers -->
-      <line x1="${hx-hr*1.05}" y1="${hy+vr*.22}" x2="${hx-hr*.13}" y2="${hy+vr*.3}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
-      <line x1="${hx-hr*1.05}" y1="${hy+vr*.36}" x2="${hx-hr*.13}" y2="${hy+vr*.38}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
-      <line x1="${hx+hr*.13}" y1="${hy+vr*.3}" x2="${hx+hr*1.05}" y2="${hy+vr*.22}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
-      <line x1="${hx+hr*.13}" y1="${hy+vr*.38}" x2="${hx+hr*1.05}" y2="${hy+vr*.36}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
-    </svg>`;
+const BOSS_RABBIT_PHOTO = 'https://cdn.pixabay.com/photo/2018/08/22/22/15/rabbit-3624771_640.jpg';
+const PLAYER_CAT_PHOTO = 'https://cdn.pixabay.com/photo/2024/02/28/07/42/european-shorthair-8601492_640.jpg';
+
+// ══════════════════════════════════════════════
+// STAGE CONFIG
+// ══════════════════════════════════════════════
+const STAGES = [
+  { cats: 4,  dogs: 2,  size: 68, speed: 1.2, turnChance: .003, time: 60, scene: 'garden',  name: 'ステージ 1 - お庭' },
+  { cats: 6,  dogs: 3,  size: 64, speed: 1.5, turnChance: .005, time: 55, scene: 'house',   name: 'ステージ 2 - おうち' },
+  { cats: 8,  dogs: 4,  size: 60, speed: 1.7, turnChance: .006, time: 52, scene: 'school',  name: 'ステージ 3 - 学校' },
+  { cats: 10, dogs: 5,  size: 58, speed: 1.9, turnChance: .007, time: 50, scene: 'park',    name: 'ステージ 4 - 公園' },
+  { cats: 12, dogs: 6,  size: 55, speed: 2.1, turnChance: .008, time: 47, scene: 'market',  name: 'ステージ 5 - 商店街' },
+  { cats: 14, dogs: 7,  size: 52, speed: 2.3, turnChance: .009, time: 44, scene: 'beach',   name: 'ステージ 6 - ビーチ' },
+  { cats: 16, dogs: 8,  size: 50, speed: 2.5, turnChance: .010, time: 40, scene: 'forest',  name: 'ステージ 7 - 森' },
+  { cats: 18, dogs: 9,  size: 48, speed: 2.7, turnChance: .012, time: 36, scene: 'castle',  name: 'ステージ 8 - お城' },
+  { cats: 22, dogs: 10, size: 45, speed: 3.0, turnChance: .014, time: 33, scene: 'space',   name: 'ステージ 9 - 宇宙' },
+  { cats: 0,  dogs: 0,  size: 0,  speed: 0,   turnChance: 0,    time: 0,  scene: 'boss',    name: 'ステージ 10 - ボス戦', boss: true },
+];
+
+const SCENE_BG = {
+  garden: 'linear-gradient(180deg, #87CEEB 0%, #98FB98 60%, #228B22 100%)',
+  house:  'linear-gradient(180deg, #FFECD2 0%, #FCB69F 50%, #D4A574 100%)',
+  school: 'linear-gradient(180deg, #E0E7FF 0%, #C7D2FE 50%, #A5B4FC 100%)',
+  park:   'linear-gradient(180deg, #86EFAC 0%, #6EE7B7 50%, #34D399 100%)',
+  market: 'linear-gradient(180deg, #FDE68A 0%, #FCD34D 50%, #F59E0B 100%)',
+  beach:  'linear-gradient(180deg, #38BDF8 0%, #7DD3FC 40%, #FBBF24 70%, #FDE68A 100%)',
+  forest: 'linear-gradient(180deg, #064E3B 0%, #065F46 40%, #047857 100%)',
+  castle: 'linear-gradient(180deg, #6B21A8 0%, #7C3AED 50%, #A78BFA 100%)',
+  space:  'linear-gradient(180deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%)',
+  boss:   'linear-gradient(180deg, #1a0a2e 0%, #2d1b4e 40%, #4a2c6e 100%)',
+};
+
+// ══════════════════════════════════════════════
+// AUDIO (Web Audio API)
+// ══════════════════════════════════════════════
+let audioCtx = null;
+let isMuted = false;
+let bgmInterval = null;
+
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playNote(freq, duration, type='sine', vol=0.12) {
+  if (isMuted || !audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+// Cat BGM melody
+const BGM_NOTES = [
+  523.25, 587.33, 659.25, 698.46, 783.99, 698.46, 659.25, 587.33,
+  523.25, 493.88, 440.00, 493.88, 523.25, 587.33, 659.25, 523.25,
+  392.00, 440.00, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00,
+  523.25, 659.25, 783.99, 659.25, 523.25, 587.33, 493.88, 523.25,
+];
+let bgmIdx = 0;
+
+function startBGM() {
+  stopBGM();
+  bgmIdx = 0;
+  bgmInterval = setInterval(() => {
+    if (isMuted) return;
+    playNote(BGM_NOTES[bgmIdx % BGM_NOTES.length], 0.25, 'triangle', 0.06);
+    playNote(BGM_NOTES[bgmIdx % BGM_NOTES.length] * 0.5, 0.25, 'sine', 0.03);
+    bgmIdx++;
+  }, 280);
+}
+
+function stopBGM() {
+  if (bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; }
+}
+
+function playRabbitCatch() {
+  playNote(1200, 0.1, 'sine', 0.2);
+  setTimeout(() => playNote(1500, 0.1, 'sine', 0.18), 100);
+  setTimeout(() => playNote(1800, 0.15, 'sine', 0.15), 200);
+  setTimeout(() => playNote(2200, 0.2, 'sine', 0.12), 300);
+}
+
+function playAngryCat() {
+  if (isMuted || !audioCtx) return;
+  const bufferSize = audioCtx.sampleRate * 0.4;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
   }
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 2000;
+  filter.Q.value = 3;
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.2;
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioCtx.destination);
+  source.start();
+  playNote(300, 0.3, 'sawtooth', 0.12);
+  setTimeout(() => playNote(200, 0.2, 'sawtooth', 0.1), 150);
+}
 
-  // ─── SVG: RABBIT ──────────────────────────────
-  function rabbitSVG(s) {
-    const hx=s*.5, hy=s*.58, hr=s*.31, vr=s*.28;
-    const ex1=hx-hr*.43, ey=hy-vr*.1, er=hr*.175, evr=vr*.215;
-    const ex2=hx+hr*.43;
-    const eLx=hx-hr*.4, eRx=hx+hr*.4, eCy=s*.2, eW=s*.1, eH=s*.27;
-    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg">
-      <!-- long ears (key difference!) -->
-      <ellipse cx="${eLx}" cy="${eCy}" rx="${eW}" ry="${eH}" fill="#EEEEE8"/>
-      <ellipse cx="${eLx}" cy="${eCy}" rx="${eW*.55}" ry="${eH*.74}" fill="#FFB6C1"/>
-      <ellipse cx="${eRx}" cy="${eCy}" rx="${eW}" ry="${eH}" fill="#EEEEE8"/>
-      <ellipse cx="${eRx}" cy="${eCy}" rx="${eW*.55}" ry="${eH*.74}" fill="#FFB6C1"/>
-      <!-- body peek -->
-      <ellipse cx="${hx}" cy="${s*.9}" rx="${hr*.72}" ry="${s*.1}" fill="#EEEEE8"/>
-      <!-- head -->
-      <ellipse cx="${hx}" cy="${hy}" rx="${hr}" ry="${vr}" fill="#EEEEE8"/>
-      <!-- eyes -->
-      <ellipse cx="${ex1}" cy="${ey}" rx="${er}" ry="${evr}" fill="white"/>
-      <ellipse cx="${ex2}" cy="${ey}" rx="${er}" ry="${evr}" fill="white"/>
-      <ellipse cx="${ex1+er*.1}" cy="${ey+evr*.1}" rx="${er*.72}" ry="${evr*.72}" fill="#2A1800"/>
-      <ellipse cx="${ex2+er*.1}" cy="${ey+evr*.1}" rx="${er*.72}" ry="${evr*.72}" fill="#2A1800"/>
-      <circle cx="${ex1-er*.25}" cy="${ey-evr*.22}" r="${er*.34}" fill="white"/>
-      <circle cx="${ex2-er*.25}" cy="${ey-evr*.22}" r="${er*.34}" fill="white"/>
-      <!-- blush -->
-      <ellipse cx="${hx-hr*.68}" cy="${hy+vr*.27}" rx="${hr*.2}" ry="${vr*.15}" fill="#FFB6C1" opacity=".65"/>
-      <ellipse cx="${hx+hr*.68}" cy="${hy+vr*.27}" rx="${hr*.2}" ry="${vr*.15}" fill="#FFB6C1" opacity=".65"/>
-      <!-- nose -->
-      <ellipse cx="${hx}" cy="${hy+vr*.36}" rx="${hr*.12}" ry="${vr*.09}" fill="#FF9999"/>
-      <!-- mouth -->
-      <path d="M${hx-hr*.13},${hy+vr*.46} Q${hx},${hy+vr*.63} ${hx+hr*.13},${hy+vr*.46}" fill="none" stroke="#D07070" stroke-width="${s*.013}" stroke-linecap="round"/>
-      <!-- whiskers -->
-      <line x1="${hx-hr*1.0}" y1="${hy+vr*.24}" x2="${hx-hr*.13}" y2="${hy+vr*.32}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
-      <line x1="${hx-hr*1.0}" y1="${hy+vr*.38}" x2="${hx-hr*.13}" y2="${hy+vr*.39}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
-      <line x1="${hx+hr*.13}" y1="${hy+vr*.32}" x2="${hx+hr*1.0}" y2="${hy+vr*.24}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
-      <line x1="${hx+hr*.13}" y1="${hy+vr*.39}" x2="${hx+hr*1.0}" y2="${hy+vr*.38}" stroke="#AAAAAA65" stroke-width="${s*.012}"/>
-    </svg>`;
+function playStageClear() {
+  [523,659,784,1047].forEach((f,i) => setTimeout(() => playNote(f, 0.3, 'triangle', 0.15), i*120));
+}
+
+function playGameOver() {
+  [400,350,300,250].forEach((f,i) => setTimeout(() => playNote(f, 0.4, 'sine', 0.12), i*200));
+}
+
+function playBossMusic() {
+  stopBGM();
+  const bossNotes = [196, 233, 262, 196, 233, 294, 262, 233, 196, 175, 196, 233, 262, 294, 330, 262];
+  let idx = 0;
+  bgmInterval = setInterval(() => {
+    if (isMuted) return;
+    playNote(bossNotes[idx % bossNotes.length], 0.2, 'square', 0.06);
+    playNote(bossNotes[idx % bossNotes.length] * 0.5, 0.3, 'sawtooth', 0.04);
+    idx++;
+  }, 220);
+}
+
+function playPunch() {
+  playNote(150, 0.15, 'square', 0.2);
+  setTimeout(() => playNote(100, 0.1, 'square', 0.15), 50);
+}
+
+function playHit() {
+  playNote(200, 0.1, 'sawtooth', 0.15);
+  setTimeout(() => playNote(150, 0.15, 'sawtooth', 0.1), 80);
+}
+
+function playVictory() {
+  const notes = [523, 659, 784, 1047, 784, 1047, 1319, 1047];
+  notes.forEach((f, i) => setTimeout(() => playNote(f, 0.35, 'triangle', 0.12), i * 150));
+}
+
+function toggleMute() {
+  isMuted = !isMuted;
+  document.getElementById('mute-btn').textContent = isMuted ? '🔇' : '🔊';
+}
+
+// ══════════════════════════════════════════════
+// GAME STATE
+// ══════════════════════════════════════════════
+const HUD_H = 55;
+let currentStage = 0;
+let animals = [];
+let animId = null;
+let gameRunning = false;
+let timeLeft = 0;
+let timerInterval = null;
+
+// Net
+let netX = 0, netY = 0;
+const netSpeed = 6;
+let keys = {};
+
+// ══════════════════════════════════════════════
+// INPUT
+// ══════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  keys[e.key] = true;
+  if (e.key === ' ') {
+    e.preventDefault();
+    if (gameRunning && !STAGES[currentStage].boss) tryCatchWithNet();
+    if (bossRunning) bossAttack();
   }
+});
+document.addEventListener('keyup', e => { keys[e.key] = false; });
 
-  // ─── GAME FLOW ────────────────────────────────
-  function startGame() {
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
-    currentStage = 0;
-    loadStage();
+function moveNet() {
+  if (keys['ArrowLeft'] || keys['a'])  netX = Math.max(0, netX - netSpeed);
+  if (keys['ArrowRight'] || keys['d']) netX = Math.min(window.innerWidth - 50, netX + netSpeed);
+  if (keys['ArrowUp'] || keys['w'])    netY = Math.max(HUD_H, netY - netSpeed);
+  if (keys['ArrowDown'] || keys['s'])  netY = Math.min(window.innerHeight - 50, netY + netSpeed);
+  const net = document.getElementById('net');
+  if (net) {
+    net.style.left = netX + 'px';
+    net.style.top = netY + 'px';
   }
+}
 
-  function loadStage() {
-    const cfg = STAGES[currentStage];
-    const area = document.getElementById('game-area');
-    area.querySelectorAll('.animal').forEach(e => e.remove());
-    animals = [];
-    if (animId) cancelAnimationFrame(animId);
+function tryCatchWithNet() {
+  const net = document.getElementById('net');
+  net.classList.remove('catching');
+  void net.offsetWidth;
+  net.classList.add('catching');
+  setTimeout(() => net.classList.remove('catching'), 300);
 
-    // HUD
-    document.getElementById('stage-label').textContent = cfg.name;
-    for (let i = 0; i < 3; i++) {
-      const d = document.getElementById(`dot-${i}`);
-      d.className = 'dot' + (i < currentStage ? ' done' : i === currentStage ? ' current' : '');
+  const ncx = netX + 24, ncy = netY + 24;
+  let closest = null, closestDist = Infinity;
+  for (const a of animals) {
+    const sz = parseInt(a.el.style.width);
+    const acx = a.x + sz/2, acy = a.y + sz/2;
+    const d = Math.hypot(ncx - acx, ncy - acy);
+    if (d < sz * 0.7 && d < closestDist) {
+      closestDist = d;
+      closest = a;
     }
+  }
+  if (closest) onAnimalClick(closest);
+}
 
-    const W = window.innerWidth, H = window.innerHeight, sz = cfg.size;
-    const total = cfg.catCount + 1;
-    const rabbitIdx = Math.floor(Math.random() * total);
+// ══════════════════════════════════════════════
+// NORMAL STAGES
+// ══════════════════════════════════════════════
+function startGame() {
+  initAudio();
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('game-screen').classList.remove('hidden');
+  currentStage = 0;
+  buildDots();
+  loadStage();
+}
 
-    for (let i = 0; i < total; i++) {
-      const isRabbit = i === rabbitIdx;
-      const c = CAT_COLORS[Math.floor(Math.random() * CAT_COLORS.length)];
-      const el = document.createElement('div');
-      el.className = 'animal';
-      el.style.cssText = `width:${sz}px;height:${sz}px;`;
-      el.innerHTML = isRabbit ? rabbitSVG(sz) : catSVG(c, sz);
+function buildDots() {
+  const container = document.getElementById('stage-dots');
+  container.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.id = `dot-${i}`;
+    if (i === 9) d.classList.add('boss');
+    container.appendChild(d);
+  }
+}
 
-      const x = sz + Math.random() * (W - sz * 2.5);
-      const y = HUD_H + sz + Math.random() * (H - HUD_H - sz * 2.5);
-      const ang = Math.random() * Math.PI * 2;
-      const spd = cfg.speed * (.8 + Math.random() * .4);
+function loadStage() {
+  const cfg = STAGES[currentStage];
+  if (cfg.boss) { startBoss(); return; }
 
-      const a = { el, isRabbit, x, y,
-        dx: Math.cos(ang) * spd, dy: Math.sin(ang) * spd,
-        phase: Math.random() * Math.PI * 2,
-        turnChance: cfg.turnChance,
-        facingRight: Math.cos(ang) >= 0,
-      };
+  document.getElementById('game-screen').classList.remove('hidden');
+  document.getElementById('boss-screen').classList.add('hidden');
 
-      el.style.left = x + 'px';
-      el.style.top  = y + 'px';
-      el.addEventListener('click', () => onAnimalClick(a));
-      area.appendChild(el);
-      animals.push(a);
-    }
+  const area = document.getElementById('game-area');
+  area.querySelectorAll('.animal').forEach(e => e.remove());
+  area.style.background = SCENE_BG[cfg.scene];
+  animals = [];
+  if (animId) cancelAnimationFrame(animId);
+  clearInterval(timerInterval);
 
-    gameRunning = true;
-    loop();
+  // HUD
+  document.getElementById('stage-label').textContent = cfg.name;
+  for (let i = 0; i < 10; i++) {
+    const d = document.getElementById(`dot-${i}`);
+    if (!d) continue;
+    d.className = 'dot' + (i < currentStage ? ' done' : i === currentStage ? ' current' : '') + (i === 9 ? ' boss' : '');
   }
 
-  function loop() {
-    if (!gameRunning) return;
-    const W = window.innerWidth, H = window.innerHeight;
-    animals.forEach(a => {
-      a.phase += 0.042;
-      if (Math.random() < a.turnChance) {
-        const spd = Math.hypot(a.dx, a.dy);
-        const ang = Math.random() * Math.PI * 2;
-        a.dx = Math.cos(ang) * spd;
-        a.dy = Math.sin(ang) * spd;
-      }
-      const sz = parseInt(a.el.style.width);
-      a.x += a.dx; a.y += a.dy;
-      if (a.x < 0)      { a.x = 0;      a.dx =  Math.abs(a.dx); }
-      if (a.x > W - sz) { a.x = W - sz; a.dx = -Math.abs(a.dx); }
-      if (a.y < HUD_H)  { a.y = HUD_H;  a.dy =  Math.abs(a.dy); }
-      if (a.y > H - sz) { a.y = H - sz; a.dy = -Math.abs(a.dy); }
-
-      const bob  = Math.sin(a.phase) * 3;
-      const flip = a.dx < 0 ? 'scaleX(-1)' : 'scaleX(1)';
-      a.el.style.left      = a.x + 'px';
-      a.el.style.top       = a.y + 'px';
-      a.el.style.transform = `translateY(${bob}px) ${flip}`;
-      a.el.style.setProperty('--flip', flip);
-    });
-    animId = requestAnimationFrame(loop);
-  }
-
-  // ─── CLICK HANDLER ────────────────────────────
-  function onAnimalClick(a) {
-    if (!gameRunning) return;
-    const cx = a.x + parseInt(a.el.style.width) / 2;
-
-    if (a.isRabbit) {
+  // Timer
+  timeLeft = cfg.time;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
       gameRunning = false;
       cancelAnimationFrame(animId);
-      showPopup('みつけた！ 🐰✨', cx, a.y, '#FF5588');
-      spawnSparkles(cx, a.y, 18);
-      setTimeout(() => {
-        if (currentStage < STAGES.length - 1) showStageClear();
-        else showGameClear();
-      }, 750);
+      clearInterval(timerInterval);
+      stopBGM();
+      playGameOver();
+      document.getElementById('gameover-text').textContent = `${cfg.name} でうさぎに逃げられちゃった...`;
+      document.getElementById('gameover-screen').classList.remove('hidden');
+    }
+  }, 1000);
+
+  const W = window.innerWidth, H = window.innerHeight, sz = cfg.size;
+  const total = cfg.cats + cfg.dogs + 1;
+  const rabbitIdx = Math.floor(Math.random() * total);
+
+  let catCount = 0, dogCount = 0;
+  for (let i = 0; i < total; i++) {
+    const isRabbit = i === rabbitIdx;
+    let type, photo;
+    if (isRabbit) {
+      type = 'rabbit';
+      photo = RABBIT_PHOTOS[Math.floor(Math.random() * RABBIT_PHOTOS.length)];
+    } else if (catCount < cfg.cats) {
+      type = 'cat';
+      photo = CAT_PHOTOS[Math.floor(Math.random() * CAT_PHOTOS.length)];
+      catCount++;
     } else {
-      showPopup('にゃ！', cx, a.y, '#FF8844');
-      a.el.classList.remove('wrong');
-      void a.el.offsetWidth;
-      a.el.classList.add('wrong');
-      setTimeout(() => a.el.classList.remove('wrong'), 420);
+      type = 'dog';
+      photo = DOG_PHOTOS[Math.floor(Math.random() * DOG_PHOTOS.length)];
+      dogCount++;
     }
-  }
 
-  // ─── SCREENS ──────────────────────────────────
-  function showStageClear() {
-    document.getElementById('stage-clear-text').textContent = `${STAGES[currentStage].name} クリア！ 🎉`;
-    document.getElementById('stage-clear-screen').classList.remove('hidden');
-    for (let i = 0; i < 6; i++)
-      setTimeout(() => spawnSparkles(Math.random() * window.innerWidth, 50 + Math.random() * 120, 6), i * 120);
-  }
-
-  function nextStage() {
-    document.getElementById('stage-clear-screen').classList.add('hidden');
-    currentStage++;
-    loadStage();
-  }
-
-  function showGameClear() {
-    document.getElementById('game-screen').classList.add('hidden');
-    document.getElementById('game-clear-screen').classList.remove('hidden');
-    for (let i = 0; i < 22; i++)
-      setTimeout(() => spawnSparkles(Math.random() * window.innerWidth, 20 + Math.random() * 160, 5), i * 95);
-  }
-
-  function resetGame() {
-    document.getElementById('game-clear-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
-    currentStage = 0;
-    loadStage();
-  }
-
-  // ─── EFFECTS ──────────────────────────────────
-  function showPopup(text, x, y, color) {
     const el = document.createElement('div');
-    el.className = 'popup';
-    el.textContent = text;
-    el.style.cssText = `left:${x}px;top:${y - 10}px;color:${color};`;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 950);
+    el.className = 'animal';
+    el.style.cssText = `width:${sz}px;height:${sz}px;`;
+    const img = document.createElement('img');
+    img.src = photo;
+    img.alt = type;
+    img.draggable = false;
+    el.appendChild(img);
+
+    const x = sz + Math.random() * (W - sz * 2.5);
+    const y = HUD_H + sz + Math.random() * (H - HUD_H - sz * 2.5);
+    const ang = Math.random() * Math.PI * 2;
+    const spd = cfg.speed * (.8 + Math.random() * .4);
+
+    const a = { el, type, isRabbit, x, y,
+      dx: Math.cos(ang) * spd, dy: Math.sin(ang) * spd,
+      phase: Math.random() * Math.PI * 2,
+      turnChance: cfg.turnChance
+    };
+
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.addEventListener('click', () => onAnimalClick(a));
+    area.appendChild(el);
+    animals.push(a);
   }
 
-  function spawnSparkles(x, y, count) {
-    const pool = ['✨','⭐','💕','🎉','💫','🌟','💖','🎊','🌸'];
-    for (let i = 0; i < count; i++) {
-      const el = document.createElement('div');
-      el.className = 'sparkle';
-      el.textContent = pool[Math.floor(Math.random() * pool.length)];
-      el.style.cssText = `left:${x - 40 + Math.random() * 80}px;top:${y - 10}px;font-size:${.9 + Math.random() * 1.1}rem;animation-delay:${Math.random() * .3}s;`;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 1300);
+  // Init net
+  netX = W / 2;
+  netY = H / 2;
+  document.getElementById('net').style.display = 'block';
+
+  gameRunning = true;
+  startBGM();
+  loop();
+}
+
+function updateTimerDisplay() {
+  const tb = document.getElementById('timer-box');
+  tb.textContent = '\u23F1\uFE0F ' + timeLeft + 's';
+  tb.classList.toggle('urgent', timeLeft <= 10);
+}
+
+function loop() {
+  if (!gameRunning) return;
+  moveNet();
+  const W = window.innerWidth, H = window.innerHeight;
+  animals.forEach(a => {
+    a.phase += 0.042;
+    if (Math.random() < a.turnChance) {
+      const spd = Math.hypot(a.dx, a.dy);
+      const ang = Math.random() * Math.PI * 2;
+      a.dx = Math.cos(ang) * spd;
+      a.dy = Math.sin(ang) * spd;
+    }
+    const sz = parseInt(a.el.style.width);
+    a.x += a.dx; a.y += a.dy;
+    if (a.x < 0)      { a.x = 0;      a.dx =  Math.abs(a.dx); }
+    if (a.x > W - sz) { a.x = W - sz; a.dx = -Math.abs(a.dx); }
+    if (a.y < HUD_H)  { a.y = HUD_H;  a.dy =  Math.abs(a.dy); }
+    if (a.y > H - sz) { a.y = H - sz; a.dy = -Math.abs(a.dy); }
+    const bob = Math.sin(a.phase) * 3;
+    a.el.style.left = a.x + 'px';
+    a.el.style.top = (a.y + bob) + 'px';
+  });
+  animId = requestAnimationFrame(loop);
+}
+
+function onAnimalClick(a) {
+  if (!gameRunning) return;
+  const cx = a.x + parseInt(a.el.style.width) / 2;
+  if (a.isRabbit) {
+    gameRunning = false;
+    cancelAnimationFrame(animId);
+    clearInterval(timerInterval);
+    stopBGM();
+    playRabbitCatch();
+    playStageClear();
+    showPopup('みつけた！ 🐰✨', cx, a.y, '#FF5588');
+    spawnSparkles(cx, a.y, 18);
+    setTimeout(() => showStageClear(), 750);
+  } else {
+    playAngryCat();
+    showPopup(a.type === 'cat' ? 'フシャー！🐱💢' : 'ワン！🐶💢', cx, a.y, '#FF8844');
+    a.el.classList.remove('wrong');
+    void a.el.offsetWidth;
+    a.el.classList.add('wrong');
+    setTimeout(() => a.el.classList.remove('wrong'), 420);
+    timeLeft = Math.max(1, timeLeft - 3);
+    updateTimerDisplay();
+  }
+}
+
+function showStageClear() {
+  document.getElementById('stage-clear-text').textContent = `${STAGES[currentStage].name} クリア！ 🎉`;
+  document.getElementById('clear-time-text').textContent = `残り時間: ${timeLeft}秒`;
+  document.getElementById('stage-clear-screen').classList.remove('hidden');
+  document.getElementById('net').style.display = 'none';
+  for (let i = 0; i < 6; i++)
+    setTimeout(() => spawnSparkles(Math.random() * window.innerWidth, 50 + Math.random() * 120, 6), i * 120);
+}
+
+function nextStage() {
+  document.getElementById('stage-clear-screen').classList.add('hidden');
+  currentStage++;
+  if (currentStage >= STAGES.length) {
+    showGameClear();
+  } else {
+    loadStage();
+  }
+}
+
+function retryStage() {
+  document.getElementById('gameover-screen').classList.add('hidden');
+  loadStage();
+}
+
+function showGameClear() {
+  document.getElementById('game-screen').classList.add('hidden');
+  playVictory();
+}
+
+function resetGame() {
+  stopBGM();
+  clearInterval(timerInterval);
+  cancelAnimationFrame(animId);
+  stopBossLoop();
+  gameRunning = false;
+  bossRunning = false;
+  ['game-screen','boss-screen','stage-clear-screen','gameover-screen','game-clear-screen','ending-screen'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('start-screen').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════
+// BOSS BATTLE (Stage 10)
+// ══════════════════════════════════════════════
+let bossRunning = false;
+let bossAnimId = null;
+let playerCat = { x: 0, y: 0, hp: 5 };
+let bossRabbit = { x: 0, y: 0, hp: 10, dir: 1 };
+let carrots = [];
+let bossCarrotInterval = null;
+let playerInvincible = false;
+
+function startBoss() {
+  document.getElementById('game-screen').classList.add('hidden');
+  document.getElementById('boss-screen').classList.remove('hidden');
+  document.getElementById('net').style.display = 'none';
+
+  for (let i = 0; i < 10; i++) {
+    const d = document.getElementById(`dot-${i}`);
+    if (!d) continue;
+    d.className = 'dot' + (i < 9 ? ' done' : ' current boss');
+  }
+
+  const area = document.getElementById('boss-area');
+  area.innerHTML = '';
+  carrots = [];
+
+  const W = window.innerWidth, H = window.innerHeight;
+
+  // Boss rabbit
+  const bossEl = document.createElement('div');
+  bossEl.id = 'boss-rabbit';
+  bossEl.style.cssText = 'width:120px;height:120px;';
+  const bossImg = document.createElement('img');
+  bossImg.src = BOSS_RABBIT_PHOTO;
+  bossImg.draggable = false;
+  bossEl.appendChild(bossImg);
+  area.appendChild(bossEl);
+  bossRabbit = { x: W/2 - 60, y: 80, hp: 10, dir: 1, el: bossEl };
+  bossEl.style.left = bossRabbit.x + 'px';
+  bossEl.style.top = bossRabbit.y + 'px';
+
+  // Player cat
+  const catEl = document.createElement('div');
+  catEl.id = 'player-cat';
+  catEl.style.cssText = 'width:70px;height:70px;';
+  const catImg = document.createElement('img');
+  catImg.src = PLAYER_CAT_PHOTO;
+  catImg.draggable = false;
+  catEl.appendChild(catImg);
+  area.appendChild(catEl);
+  playerCat = { x: W/2 - 35, y: H - 130, hp: 5, el: catEl };
+  catEl.style.left = playerCat.x + 'px';
+  catEl.style.top = playerCat.y + 'px';
+
+  // HP bars
+  document.getElementById('player-hp-bar').style.width = '100%';
+  document.getElementById('boss-hp-bar').style.width = '100%';
+
+  playerInvincible = false;
+  bossRunning = true;
+  playBossMusic();
+
+  bossCarrotInterval = setInterval(() => {
+    if (!bossRunning) return;
+    spawnCarrot();
+  }, 800);
+
+  bossLoop();
+}
+
+function spawnCarrot() {
+  const area = document.getElementById('boss-area');
+  const el = document.createElement('div');
+  el.className = 'carrot';
+  el.textContent = '🥕';
+  const cx = bossRabbit.x + 60;
+  const cy = bossRabbit.y + 120;
+  const dx = playerCat.x + 35 - cx;
+  const dy = playerCat.y + 35 - cy;
+  const dist = Math.hypot(dx, dy) || 1;
+  const speed = 4 + Math.random() * 2;
+  const c = { el, x: cx, y: cy, dx: dx/dist * speed, dy: dy/dist * speed };
+  el.style.left = c.x + 'px';
+  el.style.top = c.y + 'px';
+  area.appendChild(el);
+  carrots.push(c);
+}
+
+function bossAttack() {
+  if (!bossRunning) return;
+  const dx = (playerCat.x + 35) - (bossRabbit.x + 60);
+  const dy = (playerCat.y + 35) - (bossRabbit.y + 60);
+  const dist = Math.hypot(dx, dy);
+  if (dist < 110) {
+    bossRabbit.hp--;
+    playPunch();
+    document.getElementById('boss-hp-bar').style.width = (bossRabbit.hp / 10 * 100) + '%';
+    const eff = document.createElement('div');
+    eff.className = 'punch-effect';
+    eff.textContent = '💥';
+    eff.style.left = (bossRabbit.x + 40) + 'px';
+    eff.style.top = (bossRabbit.y + 40) + 'px';
+    document.getElementById('boss-area').appendChild(eff);
+    setTimeout(() => eff.remove(), 400);
+    bossRabbit.x += (dx > 0 ? -30 : 30);
+
+    if (bossRabbit.hp <= 0) {
+      bossRunning = false;
+      stopBossLoop();
+      stopBGM();
+      playVictory();
+      setTimeout(() => showEnding(), 1000);
     }
   }
+}
+
+function bossLoop() {
+  if (!bossRunning) return;
+
+  const W = window.innerWidth, H = window.innerHeight;
+  const bossSpeed = 3;
+
+  // Move player
+  if (keys['ArrowLeft'] || keys['a'])  playerCat.x = Math.max(0, playerCat.x - 5);
+  if (keys['ArrowRight'] || keys['d']) playerCat.x = Math.min(W - 70, playerCat.x + 5);
+  if (keys['ArrowUp'] || keys['w'])    playerCat.y = Math.max(60, playerCat.y - 5);
+  if (keys['ArrowDown'] || keys['s'])  playerCat.y = Math.min(H - 70, playerCat.y + 5);
+  playerCat.el.style.left = playerCat.x + 'px';
+  playerCat.el.style.top = playerCat.y + 'px';
+
+  // Move boss
+  bossRabbit.x += bossRabbit.dir * bossSpeed;
+  if (bossRabbit.x < 10 || bossRabbit.x > W - 130) bossRabbit.dir *= -1;
+  const bob = Math.sin(Date.now() / 300) * 8;
+  bossRabbit.el.style.left = bossRabbit.x + 'px';
+  bossRabbit.el.style.top = (bossRabbit.y + bob) + 'px';
+
+  // Move carrots
+  for (let i = carrots.length - 1; i >= 0; i--) {
+    const c = carrots[i];
+    c.x += c.dx;
+    c.y += c.dy;
+    c.el.style.left = c.x + 'px';
+    c.el.style.top = c.y + 'px';
+
+    if (c.x < -50 || c.x > W + 50 || c.y < -50 || c.y > H + 50) {
+      c.el.remove();
+      carrots.splice(i, 1);
+      continue;
+    }
+
+    if (!playerInvincible) {
+      const hx = (playerCat.x + 35) - c.x;
+      const hy = (playerCat.y + 35) - c.y;
+      if (Math.hypot(hx, hy) < 40) {
+        playerCat.hp--;
+        playHit();
+        document.getElementById('player-hp-bar').style.width = (playerCat.hp / 5 * 100) + '%';
+        c.el.remove();
+        carrots.splice(i, 1);
+
+        playerInvincible = true;
+        playerCat.el.style.opacity = '0.4';
+        setTimeout(() => {
+          playerInvincible = false;
+          if (playerCat.el) playerCat.el.style.opacity = '1';
+        }, 1000);
+
+        if (playerCat.hp <= 0) {
+          bossRunning = false;
+          stopBossLoop();
+          stopBGM();
+          playGameOver();
+          document.getElementById('boss-screen').classList.add('hidden');
+          document.getElementById('gameover-text').textContent = 'ボスうさぎに負けちゃった...';
+          document.getElementById('gameover-screen').classList.remove('hidden');
+          return;
+        }
+      }
+    }
+  }
+
+  bossAnimId = requestAnimationFrame(bossLoop);
+}
+
+function stopBossLoop() {
+  if (bossAnimId) { cancelAnimationFrame(bossAnimId); bossAnimId = null; }
+  if (bossCarrotInterval) { clearInterval(bossCarrotInterval); bossCarrotInterval = null; }
+}
+
+// ══════════════════════════════════════════════
+// ENDING
+// ══════════════════════════════════════════════
+function showEnding() {
+  document.getElementById('boss-screen').classList.add('hidden');
+  const endScreen = document.getElementById('ending-screen');
+  endScreen.classList.remove('hidden');
+
+  const scene = document.getElementById('ending-scene');
+  scene.innerHTML = '';
+  const allPhotos = [...CAT_PHOTOS.slice(0,4), ...DOG_PHOTOS.slice(0,2), ...RABBIT_PHOTOS.slice(0,2)];
+  allPhotos.forEach(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.className = 'ending-animal';
+    scene.appendChild(img);
+  });
+
+  for (let i = 0; i < 30; i++) {
+    setTimeout(() => spawnSparkles(Math.random() * window.innerWidth, 20 + Math.random() * window.innerHeight * 0.6, 4), i * 150);
+  }
+
+  stopBGM();
+  const endNotes = [523, 587, 659, 784, 659, 784, 880, 1047, 880, 784, 659, 784, 1047, 880, 784, 659];
+  let idx = 0;
+  bgmInterval = setInterval(() => {
+    if (isMuted) return;
+    playNote(endNotes[idx % endNotes.length], 0.3, 'triangle', 0.08);
+    playNote(endNotes[idx % endNotes.length] * 0.5, 0.4, 'sine', 0.04);
+    idx++;
+  }, 350);
+}
+
+// ══════════════════════════════════════════════
+// EFFECTS
+// ══════════════════════════════════════════════
+function showPopup(text, x, y, color) {
+  const el = document.createElement('div');
+  el.className = 'popup';
+  el.textContent = text;
+  el.style.cssText = `left:${x}px;top:${y - 10}px;color:${color};`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 950);
+}
+
+function spawnSparkles(x, y, count) {
+  const pool = ['✨','⭐','💕','🎉','💫','🌟','💖','🎊','🌸'];
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'sparkle';
+    el.textContent = pool[Math.floor(Math.random() * pool.length)];
+    el.style.cssText = `left:${x - 40 + Math.random() * 80}px;top:${y - 10}px;font-size:${.9 + Math.random() * 1.1}rem;animation-delay:${Math.random() * .3}s;`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1300);
+  }
+}
 </script>
 </body>
 </html>
