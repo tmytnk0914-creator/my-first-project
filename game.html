@@ -7,28 +7,20 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { width: 100vw; height: 100vh; overflow: hidden; font-family: 'Hiragino Maru Gothic Pro', 'BIZ UDGothic', sans-serif; user-select: none; }
-
     .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 200; }
     .screen.hidden { display: none; }
-
-    /* START */
     #start-screen { background: linear-gradient(155deg, #FFE0F0 0%, #E8F0FF 55%, #FFF5E0 100%); }
     .game-title { font-size: 2.8rem; font-weight: 900; color: #FF5588; text-shadow: 3px 3px 0 #FFAABB, 0 0 20px rgba(255,85,136,.3); }
     .game-subtitle { font-size: 1rem; color: #FF88AA; }
-    .start-desc { font-size: .85rem; color: #FFAACC; background: rgba(255,255,255,.65); padding: 10px 22px; border-radius: 14px; text-align: center; line-height: 1.7; max-width: 500px; }
-
+    .start-desc { font-size: .85rem; color: #FFAACC; background: rgba(255,255,255,.65); padding: 10px 22px; border-radius: 14px; text-align: center; line-height: 1.7; max-width: 520px; }
     .btn { padding: 13px 38px; font-size: 1.25rem; font-weight: bold; border: none; border-radius: 50px; cursor: pointer; color: white; letter-spacing: .05em; box-shadow: 0 5px 15px rgba(0,0,0,.15); transition: transform .15s, box-shadow .15s; }
     .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.22); }
     .btn:active { transform: translateY(1px); }
     .btn-pink { background: linear-gradient(135deg, #FF7AAB, #FF4488); }
     .btn-gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
-
-    /* GAME */
     #game-screen { position: fixed; inset: 0; z-index: 100; }
     #game-screen.hidden { display: none; }
     #game-area { width: 100%; height: 100%; position: relative; overflow: hidden; }
-
-    /* HUD */
     #hud { position: fixed; top: 0; left: 0; right: 0; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; z-index: 150; background: rgba(255,255,255,.9); backdrop-filter: blur(14px); box-shadow: 0 2px 16px rgba(255,100,150,.12); flex-wrap: wrap; gap: 6px; }
     #stage-label { font-size: 1.1rem; font-weight: bold; color: #FF5588; }
     #hint-box { font-size: .85rem; color: #FF88AA; background: #FFF0F6; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #FFBBCC; }
@@ -40,39 +32,26 @@
     .dot.done { background: #FF5588; border-color: #FF2266; }
     .dot.current { background: #FF99BB; border-color: #FF5588; box-shadow: 0 0 6px #FF5588; }
     .dot.boss { background: #FFD700; border-color: #FFA500; }
-
-    /* GLOVE (player) */
     #net { position: absolute; z-index: 50; pointer-events: none; font-size: 48px; transition: none; }
     #net.catching { animation: gloveGrab .3s ease; }
-    @keyframes gloveGrab {
-      0%  { transform: scale(1) rotate(0); }
-      35% { transform: scale(1.5) rotate(-25deg); }
-      65% { transform: scale(0.85) rotate(10deg); }
-      100%{ transform: scale(1) rotate(0); }
-    }
-
-    /* ANIMAL */
+    @keyframes gloveGrab { 0%{transform:scale(1) rotate(0)} 35%{transform:scale(1.5) rotate(-25deg)} 65%{transform:scale(.85) rotate(10deg)} 100%{transform:scale(1) rotate(0)} }
     .animal { position: absolute; z-index: 10; transition: none; cursor: pointer; border-radius: 50%; overflow: hidden; border: 3px solid rgba(255,255,255,.85); box-shadow: 0 2px 10px rgba(0,0,0,.22); }
     .animal svg { width: 100%; height: 100%; display: block; pointer-events: none; }
     .animal.wrong { animation: wrongShake .4s ease; }
+    .animal-emoji { position: absolute; z-index: 10; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,.15); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+    .animal-emoji.wrong { animation: wrongShake .4s ease; }
     @keyframes wrongShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-
-    /* POPUP */
     .popup { position: fixed; pointer-events: none; font-size: 1.1rem; font-weight: bold; z-index: 300; white-space: nowrap; animation: popupFloat .9s ease-out forwards; }
-    @keyframes popupFloat { 0%{transform:translateX(-50%) scale(.5); opacity:1} 100%{transform:translateX(-50%) translateY(-55px) scale(1.1); opacity:0} }
-
-    /* STAGE CLEAR */
-    #stage-clear-screen { background: rgba(255,228,244,.97); backdrop-filter: blur(14px); }
+    @keyframes popupFloat { 0%{transform:translateX(-50%) scale(.5);opacity:1} 100%{transform:translateX(-50%) translateY(-55px) scale(1.1);opacity:0} }
+    #stage-clear-screen { background: rgba(255,228,244,.97); backdrop-filter: blur(14px); cursor: pointer; }
     .clear-big { font-size: 2.5rem; font-weight: 900; color: #FF5588; text-shadow: 3px 3px 0 #FFAABB; animation: clearPop .5s cubic-bezier(.34,1.56,.64,1); }
     .clear-sub { font-size: 1rem; color: #FF88AA; }
+    .space-hint { font-size: .85rem; color: #FF99BB; background: rgba(255,255,255,.7); padding: 7px 20px; border-radius: 20px; margin-top: 4px; animation: hintBlink 1.2s ease infinite alternate; }
+    @keyframes hintBlink { from{opacity:.6} to{opacity:1} }
     @keyframes clearPop { from{transform:scale(0) rotate(-12deg)} to{transform:scale(1) rotate(0)} }
-
-    /* GAME OVER */
     #gameover-screen { background: rgba(40,0,20,.92); backdrop-filter: blur(14px); }
     .gameover-title { font-size: 2.5rem; font-weight: 900; color: #FF4466; text-shadow: 0 0 30px rgba(255,0,50,.5); }
     .gameover-sub { font-size: 1rem; color: #FFAACC; }
-
-    /* BOSS */
     #boss-screen { position: fixed; inset: 0; z-index: 100; }
     #boss-screen.hidden { display: none; }
     #boss-area { width: 100%; height: 100%; position: relative; overflow: hidden; background: linear-gradient(180deg, #1a0a2e 0%, #2d1b4e 40%, #4a2c6e 100%); }
@@ -82,61 +61,60 @@
     .hp-bar.boss-hp { background: linear-gradient(90deg, #FF4444, #FF8800); }
     .hp-bar.player-hp { background: linear-gradient(90deg, #44FF44, #88FF00); }
     .hp-label { color: white; font-size: .85rem; font-weight: bold; margin-bottom: 3px; }
-
-    #boss-rabbit { position: absolute; z-index: 20; border-radius: 18%; overflow: hidden; border: 4px solid #FFD700; box-shadow: 0 0 30px rgba(255,215,0,.5); }
-    #boss-rabbit svg { width: 100%; height: 100%; display: block; }
-    .carrot { position: absolute; font-size: 28px; z-index: 15; pointer-events: none; }
+    .boss-rabbit-el { position: absolute; z-index: 20; border-radius: 18%; overflow: hidden; border: 4px solid #FFD700; box-shadow: 0 0 30px rgba(255,215,0,.5); transition: box-shadow .2s; }
+    .boss-rabbit-el svg { width: 100%; height: 100%; display: block; }
+    .boss-rabbit-el.berserk { border-color: #FF0000 !important; animation: berserkPulse .3s infinite alternate; }
+    @keyframes berserkPulse { from{box-shadow:0 0 20px rgba(255,0,0,.5)} to{box-shadow:0 0 60px rgba(255,0,0,1)} }
+    .carrot { position: absolute; font-size: 26px; z-index: 15; pointer-events: none; }
     .ear-spin { position: absolute; z-index: 26; font-size: 38px; pointer-events: none; }
     #player-cat { position: absolute; z-index: 25; border-radius: 50%; overflow: hidden; border: 3px solid #44FF44; box-shadow: 0 0 15px rgba(0,255,0,.3); }
     #player-cat svg { width: 100%; height: 100%; display: block; }
     #player-cat.scratching { animation: catAttack .3s ease; }
-    @keyframes catAttack {
-      0%  { transform: scale(1) rotate(0); }
-      35% { transform: scale(1.35) rotate(-22deg) translate(8px,-8px); }
-      100%{ transform: scale(1) rotate(0); }
-    }
+    @keyframes catAttack { 0%{transform:scale(1) rotate(0)} 35%{transform:scale(1.35) rotate(-22deg) translate(8px,-8px)} 100%{transform:scale(1) rotate(0)} }
     .scratch-effect { position: absolute; z-index: 35; pointer-events: none; animation: scratchAnim .5s ease-out forwards; }
-    @keyframes scratchAnim {
-      0%  { opacity:0; transform: scale(0.4) rotate(-15deg); }
-      35% { opacity:1; transform: scale(1.15) rotate(5deg); }
-      100%{ opacity:0; transform: scale(0.9) rotate(0); }
-    }
-    .punch-effect { position: absolute; font-size: 36px; z-index: 30; pointer-events: none; animation: punchPop .4s ease-out forwards; }
-    @keyframes punchPop { 0%{transform:scale(0);opacity:1} 100%{transform:scale(2);opacity:0} }
-
-    /* ENDING */
+    @keyframes scratchAnim { 0%{opacity:0;transform:scale(.4) rotate(-15deg)} 35%{opacity:1;transform:scale(1.15) rotate(5deg)} 100%{opacity:0;transform:scale(.9) rotate(0)} }
+    .cat-paw-ext { position: absolute; z-index: 38; pointer-events: none; font-size: 52px; animation: catPawExtend .45s ease-out forwards; transform-origin: left center; }
+    @keyframes catPawExtend { 0%{transform:scale(.2) rotate(-40deg);opacity:1} 45%{transform:scale(1.5) rotate(10deg);opacity:1} 100%{transform:scale(1.0) rotate(0);opacity:0} }
+    #story-screen { background: linear-gradient(135deg, #FFF5E0 0%, #FFE0F0 50%, #E0F0FF 100%); z-index: 250; cursor: pointer; }
+    .story-stage-badge { font-size: .85rem; color: #FF88AA; background: rgba(255,255,255,.7); padding: 5px 16px; border-radius: 20px; margin-bottom: 4px; }
+    .story-chars { display: flex; gap: 60px; justify-content: center; margin-bottom: 10px; }
+    .story-char-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .story-char { font-size: 68px; transition: transform .25s, filter .25s; filter: grayscale(50%) brightness(.8); }
+    .story-char.active { transform: scale(1.18) translateY(-8px); filter: none; }
+    .story-char-name { font-size: .75rem; color: #FF88AA; }
+    .story-box { background: rgba(255,255,255,.88); border-radius: 20px; padding: 22px 32px; max-width: 580px; width: 90vw; box-shadow: 0 8px 32px rgba(255,100,150,.2); border: 2px solid #FFBBDD; }
+    .story-speaker { font-size: 1.05rem; font-weight: bold; color: #FF5588; margin-bottom: 8px; }
+    .story-text { font-size: 1rem; color: #333; line-height: 1.85; min-height: 55px; }
+    .story-hint { font-size: .82rem; color: #FFAACC; margin-top: 10px; animation: hintBlink 1.2s ease infinite alternate; }
     #ending-screen.hidden { display: none; }
     #ending-screen { background: linear-gradient(180deg, #FFE0F0, #FFF5E0, #E0F0FF); }
     .ending-scene { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
-    .ending-animal { display: inline-block; font-size: 50px; animation: endingBounce 1s ease infinite; }
-    .ending-animal:nth-child(2n) { animation-delay: .2s; }
-    .ending-animal:nth-child(3n) { animation-delay: .4s; }
+    .ending-animal { display: inline-block; font-size: 48px; animation: endingBounce 1s ease infinite; }
+    .ending-animal:nth-child(2n){animation-delay:.2s} .ending-animal:nth-child(3n){animation-delay:.4s}
     @keyframes endingBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
     .ending-heart { font-size: 2rem; animation: heartFloat 2s ease infinite; }
     @keyframes heartFloat { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-8px) scale(1.1)} }
     .final-title { font-size: 2.2rem; font-weight: 900; color: #FF3366; text-shadow: 3px 3px 0 #FFAA99; animation: clearPop .5s ease; }
     .final-sub { font-size: 1rem; color: #FF6688; }
-
-    /* SPARKLE */
     .sparkle { position: fixed; pointer-events: none; z-index: 400; animation: sparkleFly 1.1s ease-out forwards; }
-    @keyframes sparkleFly { 0%{transform:scale(0) translateY(0); opacity:1} 100%{transform:scale(1.2) translateY(80px); opacity:0} }
-
-    /* MUTE BTN */
+    @keyframes sparkleFly { 0%{transform:scale(0) translateY(0);opacity:1} 100%{transform:scale(1.2) translateY(80px);opacity:0} }
     #mute-btn { position: fixed; bottom: 12px; right: 12px; z-index: 500; background: rgba(255,255,255,.8); border: 2px solid #FFAABB; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .boss-warning { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 2rem; font-weight: 900; z-index: 500; pointer-events: none; animation: bossWarnPop .8s ease-out forwards; }
+    @keyframes bossWarnPop { 0%{transform:translate(-50%,-50%) scale(.3);opacity:1} 60%{transform:translate(-50%,-50%) scale(1.2);opacity:1} 100%{transform:translate(-50%,-50%) scale(1.0);opacity:0} }
   </style>
 </head>
 <body>
-
 <!-- START SCREEN -->
 <div id="start-screen" class="screen">
   <div style="font-size:80px">🐰</div>
   <div class="game-title">うさぎを探せ！</div>
-  <div class="game-subtitle">🐱 猫と犬の中にまぎれたうさぎを捕まえよう！ 🐶</div>
+  <div class="game-subtitle">🐱 猫の中にまぎれたうさぎを捕まえよう！</div>
   <div class="start-desc">
-    全10ステージ（ステージ10はボス戦！）<br>
-    🕹️ 方向キーで手袋を動かしてスペースでつかもう！<br>
+    全10ステージ（ステージ5・10はボス戦！）<br>
+    🕹️ 方向キーで動かして <b>スペース</b> でつかもう！<br>
     🖱️ マウスクリックでもOK！<br>
-    ⏱️ 制限時間内にうさぎを見つけよう！
+    ⏱️ 制限時間内にうさぎを見つけよう！<br>
+    📖 ねことうさぎの物語も楽しんでね！
   </div>
   <button class="btn btn-pink" onclick="startGame()">▶ START</button>
 </div>
@@ -158,7 +136,7 @@
   <div class="clear-big" id="stage-clear-text">ステージ 1 クリア！</div>
   <div class="clear-sub" id="clear-time-text">残り時間: 30秒</div>
   <div class="clear-sub">うさぎを捕まえたよ！🐰✨</div>
-  <button class="btn btn-pink" onclick="nextStage()">次のステージへ ▶</button>
+  <div class="space-hint">スペース or クリックで次へ ▶</div>
 </div>
 
 <!-- GAME OVER -->
@@ -177,32 +155,51 @@
       <div class="hp-label">🐱 ネコ HP</div>
       <div class="hp-bar-container"><div class="hp-bar player-hp" id="player-hp-bar" style="width:100%"></div></div>
     </div>
-    <div style="color:#FFD700;font-weight:bold;font-size:1.2rem">⚔️ BOSS BATTLE ⚔️</div>
+    <div style="color:#FFD700;font-weight:bold;font-size:1.1rem" id="boss-hud-title">⚔️ BOSS BATTLE ⚔️</div>
     <div>
-      <div class="hp-label">🐰 ボスうさぎ HP</div>
+      <div class="hp-label" id="boss-hp-label">🐰 ボスうさぎ HP</div>
       <div class="hp-bar-container"><div class="hp-bar boss-hp" id="boss-hp-bar" style="width:100%"></div></div>
     </div>
   </div>
 </div>
 
+<!-- STORY SCREEN -->
+<div id="story-screen" class="screen hidden">
+  <div class="story-stage-badge" id="story-stage-badge"></div>
+  <div class="story-chars">
+    <div class="story-char-wrap">
+      <div class="story-char" id="story-cat">🐱</div>
+      <div class="story-char-name">ねこ</div>
+    </div>
+    <div class="story-char-wrap">
+      <div class="story-char" id="story-rabbit">🐰</div>
+      <div class="story-char-name">うさぎ</div>
+    </div>
+  </div>
+  <div class="story-box">
+    <div class="story-speaker" id="story-speaker"></div>
+    <div class="story-text" id="story-text-el"></div>
+  </div>
+  <div class="story-hint">スペース or クリックで次へ ▶</div>
+</div>
+
 <!-- ENDING -->
 <div id="ending-screen" class="screen hidden">
   <div class="final-title">🎊 おめでとう！！ 🎊</div>
-  <div class="final-sub">ボスうさぎを倒した！</div>
+  <div class="final-sub">最強のボスうさぎを倒した！</div>
   <div class="ending-scene" id="ending-scene"></div>
-  <div class="ending-heart">💕 みんな なかよし 💕</div>
-  <div class="final-sub">猫も犬もうさぎも、みんな友達になったよ！</div>
-  <div style="font-size:1.5rem;margin:8px 0">🐱🐶🐰❤️🐱🐶🐰</div>
+  <div class="ending-heart">💕 ねことうさぎは、なかよしになったよ 💕</div>
+  <div class="final-sub">「これからは一緒に遊ぼう！」「...うん。」</div>
+  <div style="font-size:1.5rem;margin:8px 0">🐱🐰💕🐱🐰💕🐱🐰</div>
   <button class="btn btn-pink" onclick="resetGame()">↺ もう一度遊ぶ</button>
 </div>
 
 <!-- MUTE -->
 <button id="mute-btn" onclick="toggleMute()">🔊</button>
-
 <script>
-// ══════════════════════════════════════════════
-// SVG ILLUSTRATION GENERATORS
-// ══════════════════════════════════════════════
+// ============================================================
+// SVG GENERATORS
+// ============================================================
 const CAT_VARIANTS = [
   { body:'#FF9955', dark:'#CC6633', inner:'#FFCCAA', eye:'#33CC33' },
   { body:'#999999', dark:'#555555', inner:'#FFCCAA', eye:'#88DDFF' },
@@ -213,67 +210,53 @@ const CAT_VARIANTS = [
   { body:'#CC8855', dark:'#996633', inner:'#FFCCAA', eye:'#55AAEE' },
   { body:'#EE99AA', dark:'#CC6677', inner:'#FFCCAA', eye:'#9922AA' },
 ];
-
 const DOG_VARIANTS = [
-  { body:'#F0C040', dark:'#C89020', snout:'#F8E890', eye:'#5544BB', tongue: true  },
-  { body:'#C08050', dark:'#806030', snout:'#E0B088', eye:'#882200', tongue: false },
-  { body:'#EEEEEE', dark:'#AAAAAA', snout:'#FFE8E8', eye:'#333388', tongue: true  },
-  { body:'#DD9944', dark:'#BB7722', snout:'#FFDDAA', eye:'#226644', tongue: false },
-  { body:'#886644', dark:'#664422', snout:'#BB9977', eye:'#CC4433', tongue: true  },
-  { body:'#EEE0CC', dark:'#BBAA88', snout:'#FFE8CC', eye:'#885522', tongue: false },
+  { body:'#F0C040', dark:'#C89020', snout:'#F8E890', eye:'#5544BB', tongue:true },
+  { body:'#C08050', dark:'#806030', snout:'#E0B088', eye:'#882200', tongue:false },
+  { body:'#EEEEEE', dark:'#AAAAAA', snout:'#FFE8E8', eye:'#333388', tongue:true },
+  { body:'#DD9944', dark:'#BB7722', snout:'#FFDDAA', eye:'#226644', tongue:false },
+  { body:'#886644', dark:'#664422', snout:'#BB9977', eye:'#CC4433', tongue:true },
+  { body:'#EEE0CC', dark:'#BBAA88', snout:'#FFE8CC', eye:'#885522', tongue:false },
 ];
-
-function makeCatSVG(idx) {
-  const c = CAT_VARIANTS[idx % CAT_VARIANTS.length];
+function makeCatSVG(idx){
+  const c=CAT_VARIANTS[idx%CAT_VARIANTS.length];
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
     <polygon points="14,42 27,12 40,42" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
     <polygon points="60,42 73,12 86,42" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
     <polygon points="19,42 27,20 35,42" fill="${c.inner}"/>
     <polygon points="65,42 73,20 81,42" fill="${c.inner}"/>
     <circle cx="50" cy="60" r="36" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
-    <line x1="50" y1="26" x2="50" y2="36" stroke="${c.dark}" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
-    <line x1="42" y1="28" x2="45" y2="36" stroke="${c.dark}" stroke-width="2" stroke-linecap="round" opacity=".4"/>
-    <line x1="58" y1="28" x2="55" y2="36" stroke="${c.dark}" stroke-width="2" stroke-linecap="round" opacity=".4"/>
     <ellipse cx="35" cy="58" rx="10" ry="11" fill="white"/>
     <ellipse cx="65" cy="58" rx="10" ry="11" fill="white"/>
     <ellipse cx="35" cy="60" rx="6" ry="8" fill="${c.eye}"/>
     <ellipse cx="65" cy="60" rx="6" ry="8" fill="${c.eye}"/>
-    <circle cx="35" cy="60" r="4" fill="#111"/>
-    <circle cx="65" cy="60" r="4" fill="#111"/>
-    <circle cx="37" cy="58" r="1.5" fill="white"/>
-    <circle cx="67" cy="58" r="1.5" fill="white"/>
+    <circle cx="35" cy="60" r="4" fill="#111"/><circle cx="65" cy="60" r="4" fill="#111"/>
+    <circle cx="37" cy="58" r="1.5" fill="white"/><circle cx="67" cy="58" r="1.5" fill="white"/>
     <polygon points="50,69 46,74 54,74" fill="#FF88AA"/>
     <path d="M46,74 Q50,79 54,74" fill="none" stroke="#DD5577" stroke-width="1.5"/>
-    <line x1="8"  y1="69" x2="42" y2="71" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
-    <line x1="8"  y1="75" x2="42" y2="73" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+    <line x1="8" y1="69" x2="42" y2="71" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+    <line x1="8" y1="75" x2="42" y2="73" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
     <line x1="58" y1="71" x2="92" y2="69" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
     <line x1="58" y1="73" x2="92" y2="75" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
   </svg>`;
 }
-
-function makeDogSVG(idx) {
-  const c = DOG_VARIANTS[idx % DOG_VARIANTS.length];
+function makeDogSVG(idx){
+  const c=DOG_VARIANTS[idx%DOG_VARIANTS.length];
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect x="2"  y="32" width="20" height="44" rx="10" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <rect x="2" y="32" width="20" height="44" rx="10" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
     <rect x="78" y="32" width="20" height="44" rx="10" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
     <circle cx="50" cy="58" r="36" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
     <ellipse cx="50" cy="72" rx="20" ry="13" fill="${c.snout}"/>
-    <ellipse cx="36" cy="54" rx="9" ry="10" fill="white"/>
-    <ellipse cx="64" cy="54" rx="9" ry="10" fill="white"/>
-    <circle cx="36" cy="54" r="6"   fill="${c.eye}"/>
-    <circle cx="64" cy="54" r="6"   fill="${c.eye}"/>
-    <circle cx="36" cy="54" r="3.5" fill="#111"/>
-    <circle cx="64" cy="54" r="3.5" fill="#111"/>
-    <circle cx="38" cy="52" r="1.5" fill="white"/>
-    <circle cx="66" cy="52" r="1.5" fill="white"/>
+    <ellipse cx="36" cy="54" rx="9" ry="10" fill="white"/><ellipse cx="64" cy="54" rx="9" ry="10" fill="white"/>
+    <circle cx="36" cy="54" r="6" fill="${c.eye}"/><circle cx="64" cy="54" r="6" fill="${c.eye}"/>
+    <circle cx="36" cy="54" r="3.5" fill="#111"/><circle cx="64" cy="54" r="3.5" fill="#111"/>
+    <circle cx="38" cy="52" r="1.5" fill="white"/><circle cx="66" cy="52" r="1.5" fill="white"/>
     <ellipse cx="50" cy="67" rx="6" ry="4" fill="#222"/>
-    <line x1="50" y1="71" x2="50" y2="75" stroke="${c.dark}" stroke-width="1.5"/>
     <path d="M42,75 Q50,82 58,75" fill="${c.snout}" stroke="${c.dark}" stroke-width="1.5"/>
-    ${c.tongue ? `<ellipse cx="50" cy="79" rx="7" ry="5" fill="#FF6699"/>` : ''}
+    ${c.tongue?`<ellipse cx="50" cy="79" rx="7" ry="5" fill="#FF6699"/>`:''}
   </svg>`;
 }
-
-function makeRabbitSVG() {
+function makeRabbitSVG(){
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
     <ellipse cx="34" cy="20" rx="10" ry="23" fill="white" stroke="#FFBBCC" stroke-width="2"/>
     <ellipse cx="66" cy="20" rx="10" ry="23" fill="white" stroke="#FFBBCC" stroke-width="2"/>
@@ -282,14 +265,10 @@ function makeRabbitSVG() {
     <circle cx="50" cy="65" r="34" fill="white" stroke="#FFBBCC" stroke-width="2"/>
     <ellipse cx="30" cy="72" rx="8" ry="5" fill="#FFCCDD" opacity=".5"/>
     <ellipse cx="70" cy="72" rx="8" ry="5" fill="#FFCCDD" opacity=".5"/>
-    <ellipse cx="36" cy="62" rx="9" ry="10" fill="white"/>
-    <ellipse cx="64" cy="62" rx="9" ry="10" fill="white"/>
-    <circle cx="36" cy="63" r="6"   fill="#CC0044"/>
-    <circle cx="64" cy="63" r="6"   fill="#CC0044"/>
-    <circle cx="36" cy="63" r="3.5" fill="#880022"/>
-    <circle cx="64" cy="63" r="3.5" fill="#880022"/>
-    <circle cx="38" cy="61" r="1.5" fill="white"/>
-    <circle cx="66" cy="61" r="1.5" fill="white"/>
+    <ellipse cx="36" cy="62" rx="9" ry="10" fill="white"/><ellipse cx="64" cy="62" rx="9" ry="10" fill="white"/>
+    <circle cx="36" cy="63" r="6" fill="#CC0044"/><circle cx="64" cy="63" r="6" fill="#CC0044"/>
+    <circle cx="36" cy="63" r="3.5" fill="#880022"/><circle cx="64" cy="63" r="3.5" fill="#880022"/>
+    <circle cx="38" cy="61" r="1.5" fill="white"/><circle cx="66" cy="61" r="1.5" fill="white"/>
     <ellipse cx="50" cy="73" rx="6" ry="4" fill="#FF99AA"/>
     <path d="M44,77 Q50,83 56,77" fill="none" stroke="#FF7799" stroke-width="1.5"/>
     <line x1="10" y1="73" x2="42" y2="75" stroke="#FFBBCC" stroke-width="1.5" opacity=".7"/>
@@ -298,8 +277,7 @@ function makeRabbitSVG() {
     <line x1="58" y1="77" x2="90" y2="79" stroke="#FFBBCC" stroke-width="1.5" opacity=".7"/>
   </svg>`;
 }
-
-function makeBossRabbitSVG() {
+function makeBossRabbitSVG(){
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
     <polygon points="28,32 38,14 50,26 62,14 72,32" fill="#FFD700" stroke="#CC9900" stroke-width="1.5"/>
     <circle cx="38" cy="14" r="3" fill="#FF3333"/>
@@ -307,17 +285,14 @@ function makeBossRabbitSVG() {
     <circle cx="62" cy="14" r="3" fill="#33FF33"/>
     <ellipse cx="28" cy="27" rx="10" ry="22" fill="#1A1A3E" stroke="#6644AA" stroke-width="2"/>
     <ellipse cx="72" cy="27" rx="10" ry="22" fill="#1A1A3E" stroke="#6644AA" stroke-width="2"/>
-    <ellipse cx="28" cy="27" rx="5"  ry="18" fill="#880000"/>
-    <ellipse cx="72" cy="27" rx="5"  ry="18" fill="#880000"/>
+    <ellipse cx="28" cy="27" rx="5" ry="18" fill="#880000"/>
+    <ellipse cx="72" cy="27" rx="5" ry="18" fill="#880000"/>
     <circle cx="50" cy="66" r="34" fill="#1A1A3E" stroke="#6644AA" stroke-width="2"/>
     <circle cx="35" cy="61" r="12" fill="#FF0000" opacity=".25"/>
     <circle cx="65" cy="61" r="12" fill="#FF0000" opacity=".25"/>
-    <ellipse cx="35" cy="61" rx="10" ry="10" fill="white"/>
-    <ellipse cx="65" cy="61" rx="10" ry="10" fill="white"/>
-    <circle cx="35" cy="61" r="7" fill="#FF0000"/>
-    <circle cx="65" cy="61" r="7" fill="#FF0000"/>
-    <circle cx="35" cy="61" r="4" fill="#880000"/>
-    <circle cx="65" cy="61" r="4" fill="#880000"/>
+    <ellipse cx="35" cy="61" rx="10" ry="10" fill="white"/><ellipse cx="65" cy="61" rx="10" ry="10" fill="white"/>
+    <circle cx="35" cy="61" r="7" fill="#FF0000"/><circle cx="65" cy="61" r="7" fill="#FF0000"/>
+    <circle cx="35" cy="61" r="4" fill="#880000"/><circle cx="65" cy="61" r="4" fill="#880000"/>
     <circle cx="37" cy="59" r="1.5" fill="white" opacity=".8"/>
     <circle cx="67" cy="59" r="1.5" fill="white" opacity=".8"/>
     <line x1="24" y1="50" x2="44" y2="56" stroke="#FF4444" stroke-width="3" stroke-linecap="round"/>
@@ -329,767 +304,801 @@ function makeBossRabbitSVG() {
   </svg>`;
 }
 
-// ══════════════════════════════════════════════
-// STAGE CONFIG
-// ══════════════════════════════════════════════
+// ============================================================
+// STAGE CONFIG  (stage index 4 = ステージ5 BOSS lv1, index 9 = ステージ10 BOSS lv2)
+// ============================================================
 const STAGES = [
-  { cats: 4,  dogs: 2,  size: 68, speed: 1.2, turnChance: .003, time: 60, scene: 'garden',  name: 'ステージ 1 - お庭' },
-  { cats: 6,  dogs: 3,  size: 64, speed: 1.5, turnChance: .005, time: 55, scene: 'house',   name: 'ステージ 2 - おうち' },
-  { cats: 8,  dogs: 4,  size: 60, speed: 1.7, turnChance: .006, time: 52, scene: 'school',  name: 'ステージ 3 - 学校' },
-  { cats: 10, dogs: 5,  size: 58, speed: 1.9, turnChance: .007, time: 50, scene: 'park',    name: 'ステージ 4 - 公園' },
-  { cats: 12, dogs: 6,  size: 55, speed: 2.1, turnChance: .008, time: 47, scene: 'market',  name: 'ステージ 5 - 商店街' },
-  { cats: 14, dogs: 7,  size: 52, speed: 2.3, turnChance: .009, time: 44, scene: 'beach',   name: 'ステージ 6 - ビーチ' },
-  { cats: 16, dogs: 8,  size: 50, speed: 2.5, turnChance: .010, time: 40, scene: 'forest',  name: 'ステージ 7 - 森' },
-  { cats: 18, dogs: 9,  size: 48, speed: 2.7, turnChance: .012, time: 36, scene: 'castle',  name: 'ステージ 8 - お城' },
-  { cats: 22, dogs: 10, size: 45, speed: 3.0, turnChance: .014, time: 33, scene: 'space',   name: 'ステージ 9 - 宇宙' },
-  { cats: 0,  dogs: 0,  size: 0,  speed: 0,   turnChance: 0,    time: 0,  scene: 'boss',    name: 'ステージ 10 - ボス戦', boss: true },
+  { cats:5,   dogs:2,  size:65, speed:1.3, turnChance:.003, time:60, scene:'garden', name:'ステージ 1 - お庭',   emoji:false },
+  { cats:8,   dogs:3,  size:62, speed:1.7, turnChance:.005, time:55, scene:'house',  name:'ステージ 2 - おうち', emoji:false },
+  { cats:15,  dogs:5,  size:56, speed:2.1, turnChance:.007, time:50, scene:'school', name:'ステージ 3 - 学校',   emoji:false },
+  { cats:28,  dogs:8,  size:50, speed:2.6, turnChance:.010, time:44, scene:'park',   name:'ステージ 4 - 公園',   emoji:false },
+  { boss:true, bossLevel:1, scene:'boss', name:'ステージ 5 - ボス戦！' },
+  { cats:50,  dogs:0,  size:44, speed:3.2, turnChance:.013, time:38, scene:'market', name:'ステージ 6 - 商店街', emoji:true  },
+  { cats:100, dogs:0,  size:35, speed:3.7, turnChance:.016, time:31, scene:'beach',  name:'ステージ 7 - ビーチ', emoji:true  },
+  { cats:180, dogs:0,  size:28, speed:4.2, turnChance:.020, time:25, scene:'forest', name:'ステージ 8 - 森',     emoji:true  },
+  { cats:400, dogs:0,  size:20, speed:5.0, turnChance:.025, time:20, scene:'space',  name:'ステージ 9 - 宇宙',   emoji:true  },
+  { boss:true, bossLevel:2, scene:'boss', name:'ステージ 10 - 最終ボス戦！！' },
 ];
 
 const SCENE_BG = {
-  garden: 'linear-gradient(180deg, #87CEEB 0%, #98FB98 60%, #228B22 100%)',
-  house:  'linear-gradient(180deg, #FFECD2 0%, #FCB69F 50%, #D4A574 100%)',
-  school: 'linear-gradient(180deg, #E0E7FF 0%, #C7D2FE 50%, #A5B4FC 100%)',
-  park:   'linear-gradient(180deg, #86EFAC 0%, #6EE7B7 50%, #34D399 100%)',
-  market: 'linear-gradient(180deg, #FDE68A 0%, #FCD34D 50%, #F59E0B 100%)',
-  beach:  'linear-gradient(180deg, #38BDF8 0%, #7DD3FC 40%, #FBBF24 70%, #FDE68A 100%)',
-  forest: 'linear-gradient(180deg, #064E3B 0%, #065F46 40%, #047857 100%)',
-  castle: 'linear-gradient(180deg, #6B21A8 0%, #7C3AED 50%, #A78BFA 100%)',
-  space:  'linear-gradient(180deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%)',
-  boss:   'linear-gradient(180deg, #1a0a2e 0%, #2d1b4e 40%, #4a2c6e 100%)',
+  garden:'linear-gradient(180deg,#87CEEB 0%,#98FB98 60%,#228B22 100%)',
+  house: 'linear-gradient(180deg,#FFECD2 0%,#FCB69F 50%,#D4A574 100%)',
+  school:'linear-gradient(180deg,#E0E7FF 0%,#C7D2FE 50%,#A5B4FC 100%)',
+  park:  'linear-gradient(180deg,#86EFAC 0%,#6EE7B7 50%,#34D399 100%)',
+  market:'linear-gradient(180deg,#FDE68A 0%,#FCD34D 50%,#F59E0B 100%)',
+  beach: 'linear-gradient(180deg,#38BDF8 0%,#7DD3FC 40%,#FBBF24 70%,#FDE68A 100%)',
+  forest:'linear-gradient(180deg,#064E3B 0%,#065F46 40%,#047857 100%)',
+  castle:'linear-gradient(180deg,#6B21A8 0%,#7C3AED 50%,#A78BFA 100%)',
+  space: 'linear-gradient(180deg,#0F172A 0%,#1E1B4B 50%,#312E81 100%)',
+  boss:  'linear-gradient(180deg,#1a0a2e 0%,#2d1b4e 40%,#4a2c6e 100%)',
 };
 
-// ══════════════════════════════════════════════
-// AUDIO (Web Audio API)
-// ══════════════════════════════════════════════
-let audioCtx = null;
-let isMuted = false;
-let bgmInterval = null;
-
-function initAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-function playNote(freq, duration, type='sine', vol=0.12) {
-  if (isMuted || !audioCtx) return;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.value = freq;
-  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + duration);
-}
-
-const BGM_NOTES = [
-  523.25, 587.33, 659.25, 698.46, 783.99, 698.46, 659.25, 587.33,
-  523.25, 493.88, 440.00, 493.88, 523.25, 587.33, 659.25, 523.25,
-  392.00, 440.00, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00,
-  523.25, 659.25, 783.99, 659.25, 523.25, 587.33, 493.88, 523.25,
+// ============================================================
+// STORIES  (index = stage that was just cleared)
+// ============================================================
+const STORIES = [
+  // 0: after stage 1
+  { badge:'ステージ1クリア後', lines:[
+    { who:'cat',    spk:'🐱 ねこ',   txt:'ふう！やっと捕まえた！...なんで逃げるの？仲良くしようよ。' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'フン！今日は負けてやったぞ！次は絶対捕まらない！仲間を増やしてやる！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'怖くないよ？（なんか意地っ張りな子だなあ...）' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'ばーか！うさぎはひとりが好きなんだ！絶対友達なんかいらない！' },
+  ]},
+  // 1: after stage 2
+  { badge:'ステージ2クリア後', lines:[
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'なんで捕まるんだ！くそ〜！！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'ねえ...なんでそんなに逃げるの？何か怖いことでもあった？' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'あんたたちみたいな大きいのは信用できないんだ！いつもいじわるするじゃないか！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'（...もしかして、ひどい目にあったのかな...）大丈夫だよ、噛まないよ。本当に。' },
+  ]},
+  // 2: after stage 3
+  { badge:'ステージ3クリア後', lines:[
+    { who:'cat',    spk:'🐱 ねこ',   txt:'また捕まえた！...なんかこのうさぎ、不思議な子だな。かわいいな。' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'なにニヤニヤしてるんだ！！むかつく！！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'ひとりぼっちで寂しくない？いつも逃げてばかりでさ...。' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'...っ！　さ、寂しくなんかない！次は絶対逃げてやる！ぜったいだ！' },
+  ]},
+  // 3: after stage 4
+  { badge:'ステージ4クリア後', lines:[
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'...わかった。もう逃げてばかりはいられない。ボスのわたしが直接相手してやる！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'え！？ボスだったの！？' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'そうだ！このうさぎ軍団のリーダーだ！容赦しないぞ！覚悟しろ、ねこ！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'受けて立つ！行くぞ！（でも...できれば友達になりたいんだけどな）' },
+  ]},
+  // 4: after boss stage 5
+  { badge:'⚔️ ボス1クリア後', lines:[
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'う...うそだ...。まさか本当に負けるとは...。' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'強かったよ。本当に。でも僕の勝ちだ。' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'...なんで怒らないんだ？勝ったのに、なんでそんな顔してるんだ。' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'だって、勝負が終わったらもう仲間でしょ。...そう思ってるのは僕だけ？' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'...（そっぽを向く。でも、ほんの少しだけ表情が柔らかくなる）' },
+  ]},
+  // 5: after stage 6
+  { badge:'ステージ6クリア後', lines:[
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'また来たのか。...まあ、いい。' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'今日さ、ちょっとだけ待ってくれた？捕まえたとき、逃げるの遅かったよね？' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'き、気のせいだ！ちゃんと全力で逃げてた！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'（うさぎ...ちょっとだけ笑ってた気がする。なんか嬉しいな）' },
+  ]},
+  // 6: after stage 7
+  { badge:'ステージ7クリア後', lines:[
+    { who:'cat',    spk:'🐱 ねこ',   txt:'ねえ、捕まえっこじゃなくて、今度一緒に遊ばないか？' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'...そ、そんなの...恥ずかしい...だろ！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'やっぱり！少しずつ心を開いてくれてるんだな！嬉しいよ。' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'うるさい！！...で、でも...嫌じゃ...ない、かも、しれない...。' },
+  ]},
+  // 7: after stage 8
+  { badge:'ステージ8クリア後', lines:[
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'ねこよ...最近さ、逃げるのが少しだけ楽しくなってきた。' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'それって...一緒にいるのが楽しいってこと？' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'ち、ちがう！ただのゲームだ！本気でそう思ってるだけだ！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'ははは。でも嬉しいよ、僕も楽しいから。' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'...（小さな声で）...わたしも。' },
+  ]},
+  // 8: after stage 9
+  { badge:'ステージ9クリア後', lines:[
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'ねこよ...お願いがある。' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'なに？' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'仲間たちが「ボスが負けたままじゃ示しがつかない」って言うんだ。最後にもう一度だけ戦ってほしい。今度は全員で行く。' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'...わかった。本気でいくぞ。' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'当然だ。でもねこ...これが終わったら。' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'うん？' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'...友達になろう。ずっと逃げてばかりで、ごめん。' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'もちろん！ずっとそう言いたかったんだ！約束だぞ！' },
+  ]},
 ];
-let bgmIdx = 0;
 
-function startBGM() {
-  stopBGM();
-  bgmIdx = 0;
-  bgmInterval = setInterval(() => {
-    if (isMuted) return;
-    playNote(BGM_NOTES[bgmIdx % BGM_NOTES.length], 0.25, 'triangle', 0.06);
-    playNote(BGM_NOTES[bgmIdx % BGM_NOTES.length] * 0.5, 0.25, 'sine', 0.03);
+// ============================================================
+// AUDIO
+// ============================================================
+let audioCtx=null, isMuted=false, bgmInterval=null;
+function initAudio(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+}
+function playNote(freq,dur,type='sine',vol=0.12){
+  if(isMuted||!audioCtx) return;
+  const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+  osc.type=type; osc.frequency.value=freq;
+  gain.gain.setValueAtTime(vol,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime+dur);
+}
+const BGM_NOTES=[523.25,587.33,659.25,698.46,783.99,698.46,659.25,587.33,523.25,493.88,440,493.88,523.25,587.33,659.25,523.25,392,440,493.88,523.25,587.33,523.25,493.88,440,523.25,659.25,783.99,659.25,523.25,587.33,493.88,523.25];
+let bgmIdx=0;
+function startBGM(){
+  stopBGM(); bgmIdx=0;
+  bgmInterval=setInterval(()=>{
+    if(isMuted) return;
+    playNote(BGM_NOTES[bgmIdx%BGM_NOTES.length],.25,'triangle',.06);
+    playNote(BGM_NOTES[bgmIdx%BGM_NOTES.length]*.5,.25,'sine',.03);
     bgmIdx++;
-  }, 280);
+  },280);
 }
-
-function stopBGM() {
-  if (bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; }
+function stopBGM(){ if(bgmInterval){clearInterval(bgmInterval);bgmInterval=null;} }
+function playRabbitCatch(){ playNote(1200,.1,'sine',.2); setTimeout(()=>playNote(1500,.1,'sine',.18),100); setTimeout(()=>playNote(1800,.15,'sine',.15),200); setTimeout(()=>playNote(2200,.2,'sine',.12),300); }
+function playAngryCat(){
+  if(isMuted||!audioCtx) return;
+  const buf=audioCtx.createBuffer(1,audioCtx.sampleRate*.4,audioCtx.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(d.length*.3));
+  const src=audioCtx.createBufferSource(), flt=audioCtx.createBiquadFilter(), g=audioCtx.createGain();
+  flt.type='bandpass'; flt.frequency.value=2000; flt.Q.value=3; g.gain.value=.2;
+  src.buffer=buf; src.connect(flt); flt.connect(g); g.connect(audioCtx.destination); src.start();
+  playNote(300,.3,'sawtooth',.12); setTimeout(()=>playNote(200,.2,'sawtooth',.1),150);
 }
-
-function playRabbitCatch() {
-  playNote(1200, 0.1, 'sine', 0.2);
-  setTimeout(() => playNote(1500, 0.1, 'sine', 0.18), 100);
-  setTimeout(() => playNote(1800, 0.15, 'sine', 0.15), 200);
-  setTimeout(() => playNote(2200, 0.2, 'sine', 0.12), 300);
-}
-
-function playAngryCat() {
-  if (isMuted || !audioCtx) return;
-  const bufferSize = audioCtx.sampleRate * 0.4;
-  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
-  }
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  const filter = audioCtx.createBiquadFilter();
-  filter.type = 'bandpass';
-  filter.frequency.value = 2000;
-  filter.Q.value = 3;
-  const gain = audioCtx.createGain();
-  gain.gain.value = 0.2;
-  source.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioCtx.destination);
-  source.start();
-  playNote(300, 0.3, 'sawtooth', 0.12);
-  setTimeout(() => playNote(200, 0.2, 'sawtooth', 0.1), 150);
-}
-
-function playStageClear() {
-  [523,659,784,1047].forEach((f,i) => setTimeout(() => playNote(f, 0.3, 'triangle', 0.15), i*120));
-}
-
-function playGameOver() {
-  [400,350,300,250].forEach((f,i) => setTimeout(() => playNote(f, 0.4, 'sine', 0.12), i*200));
-}
-
-function playBossMusic() {
+function playStageClear(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playNote(f,.3,'triangle',.15),i*120)); }
+function playGameOver(){ [400,350,300,250].forEach((f,i)=>setTimeout(()=>playNote(f,.4,'sine',.12),i*200)); }
+function playBossMusic(){
   stopBGM();
-  const bossNotes = [196, 233, 262, 196, 233, 294, 262, 233, 196, 175, 196, 233, 262, 294, 330, 262];
-  let idx = 0;
-  bgmInterval = setInterval(() => {
-    if (isMuted) return;
-    playNote(bossNotes[idx % bossNotes.length], 0.2, 'square', 0.06);
-    playNote(bossNotes[idx % bossNotes.length] * 0.5, 0.3, 'sawtooth', 0.04);
+  const bn=[196,233,262,196,233,294,262,233,196,175,196,233,262,294,330,262];
+  let idx=0;
+  bgmInterval=setInterval(()=>{
+    if(isMuted) return;
+    playNote(bn[idx%bn.length],.2,'square',.06);
+    playNote(bn[idx%bn.length]*.5,.3,'sawtooth',.04);
     idx++;
-  }, 220);
+  },220);
 }
+function playPunch(){ playNote(150,.15,'square',.2); setTimeout(()=>playNote(100,.1,'square',.15),50); }
+function playHit(){ playNote(200,.1,'sawtooth',.15); setTimeout(()=>playNote(150,.15,'sawtooth',.1),80); }
+function playVictory(){ [523,659,784,1047,784,1047,1319,1047].forEach((f,i)=>setTimeout(()=>playNote(f,.35,'triangle',.12),i*150)); }
+function toggleMute(){ isMuted=!isMuted; document.getElementById('mute-btn').textContent=isMuted?'🔇':'🔊'; }
 
-function playPunch() {
-  playNote(150, 0.15, 'square', 0.2);
-  setTimeout(() => playNote(100, 0.1, 'square', 0.15), 50);
-}
-
-function playHit() {
-  playNote(200, 0.1, 'sawtooth', 0.15);
-  setTimeout(() => playNote(150, 0.15, 'sawtooth', 0.1), 80);
-}
-
-function playVictory() {
-  const notes = [523, 659, 784, 1047, 784, 1047, 1319, 1047];
-  notes.forEach((f, i) => setTimeout(() => playNote(f, 0.35, 'triangle', 0.12), i * 150));
-}
-
-function toggleMute() {
-  isMuted = !isMuted;
-  document.getElementById('mute-btn').textContent = isMuted ? '🔇' : '🔊';
-}
-
-// ══════════════════════════════════════════════
+// ============================================================
 // GAME STATE
-// ══════════════════════════════════════════════
-const HUD_H = 55;
-let currentStage = 0;
-let animals = [];
-let animId = null;
-let gameRunning = false;
-let timeLeft = 0;
-let timerInterval = null;
+// ============================================================
+const HUD_H=55;
+let currentStage=0, animals=[], animId=null, gameRunning=false, timeLeft=0, timerInterval=null;
+let netX=0, netY=0;
+const netSpeed=6;
+let keys={};
 
-// Glove
-let netX = 0, netY = 0;
-const netSpeed = 6;
-let keys = {};
+// Story state
+let currentStoryData=null, storyLineIdx=0, afterStoryFn=null;
 
-// ══════════════════════════════════════════════
+// ============================================================
 // INPUT
-// ══════════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  keys[e.key] = true;
-  if (e.key === ' ') {
+// ============================================================
+document.addEventListener('keydown', e=>{
+  keys[e.key]=true;
+  if(e.key===' '){
     e.preventDefault();
-    if (gameRunning && !STAGES[currentStage].boss) tryCatchWithNet();
-    if (bossRunning) bossAttack();
+    // Story screen
+    if(!document.getElementById('story-screen').classList.contains('hidden')){ advanceStory(); return; }
+    // Stage clear screen
+    if(!document.getElementById('stage-clear-screen').classList.contains('hidden')){ nextStage(); return; }
+    // Boss
+    if(bossRunning){ bossAttack(); return; }
+    // Normal game
+    if(gameRunning && !STAGES[currentStage].boss) tryCatchWithNet();
   }
 });
-document.addEventListener('keyup', e => { keys[e.key] = false; });
+document.addEventListener('keyup', e=>{ keys[e.key]=false; });
+document.getElementById('stage-clear-screen').addEventListener('click', ()=>{
+  if(!document.getElementById('stage-clear-screen').classList.contains('hidden')) nextStage();
+});
+document.getElementById('story-screen').addEventListener('click', ()=>{
+  if(!document.getElementById('story-screen').classList.contains('hidden')) advanceStory();
+});
 
-function moveNet() {
-  if (keys['ArrowLeft'] || keys['a'])  netX = Math.max(0, netX - netSpeed);
-  if (keys['ArrowRight'] || keys['d']) netX = Math.min(window.innerWidth - 50, netX + netSpeed);
-  if (keys['ArrowUp'] || keys['w'])    netY = Math.max(HUD_H, netY - netSpeed);
-  if (keys['ArrowDown'] || keys['s'])  netY = Math.min(window.innerHeight - 50, netY + netSpeed);
-  const net = document.getElementById('net');
-  if (net) {
-    net.style.left = netX + 'px';
-    net.style.top = netY + 'px';
+function moveNet(){
+  if(keys['ArrowLeft']||keys['a'])  netX=Math.max(0,netX-netSpeed);
+  if(keys['ArrowRight']||keys['d']) netX=Math.min(window.innerWidth-50,netX+netSpeed);
+  if(keys['ArrowUp']||keys['w'])    netY=Math.max(HUD_H,netY-netSpeed);
+  if(keys['ArrowDown']||keys['s'])  netY=Math.min(window.innerHeight-50,netY+netSpeed);
+  const net=document.getElementById('net');
+  if(net){ net.style.left=netX+'px'; net.style.top=netY+'px'; }
+}
+function tryCatchWithNet(){
+  const net=document.getElementById('net');
+  net.classList.remove('catching'); void net.offsetWidth; net.classList.add('catching');
+  setTimeout(()=>net.classList.remove('catching'),300);
+  const ncx=netX+24, ncy=netY+24;
+  let closest=null, closestDist=Infinity;
+  for(const a of animals){
+    const sz=a.size, acx=a.x+sz/2, acy=a.y+sz/2, d=Math.hypot(ncx-acx,ncy-acy);
+    if(d<sz*.7&&d<closestDist){ closestDist=d; closest=a; }
   }
+  if(closest) onAnimalClick(closest);
 }
 
-function tryCatchWithNet() {
-  const net = document.getElementById('net');
-  net.classList.remove('catching');
-  void net.offsetWidth;
-  net.classList.add('catching');
-  setTimeout(() => net.classList.remove('catching'), 300);
-
-  const ncx = netX + 24, ncy = netY + 24;
-  let closest = null, closestDist = Infinity;
-  for (const a of animals) {
-    const sz = parseInt(a.el.style.width);
-    const acx = a.x + sz/2, acy = a.y + sz/2;
-    const d = Math.hypot(ncx - acx, ncy - acy);
-    if (d < sz * 0.7 && d < closestDist) {
-      closestDist = d;
-      closest = a;
-    }
-  }
-  if (closest) onAnimalClick(closest);
-}
-
-// ══════════════════════════════════════════════
+// ============================================================
 // NORMAL STAGES
-// ══════════════════════════════════════════════
-function startGame() {
+// ============================================================
+function startGame(){
   initAudio();
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('game-screen').classList.remove('hidden');
-  currentStage = 0;
-  buildDots();
-  loadStage();
+  currentStage=0; buildDots(); loadStage();
 }
-
-function buildDots() {
-  const container = document.getElementById('stage-dots');
-  container.innerHTML = '';
-  for (let i = 0; i < 10; i++) {
-    const d = document.createElement('div');
-    d.className = 'dot';
-    d.id = `dot-${i}`;
-    if (i === 9) d.classList.add('boss');
-    container.appendChild(d);
+function buildDots(){
+  const c=document.getElementById('stage-dots'); c.innerHTML='';
+  for(let i=0;i<10;i++){
+    const d=document.createElement('div');
+    d.className='dot'; d.id=`dot-${i}`;
+    if(STAGES[i].boss) d.classList.add('boss');
+    c.appendChild(d);
   }
 }
-
-function loadStage() {
-  const cfg = STAGES[currentStage];
-  if (cfg.boss) { startBoss(); return; }
+function loadStage(){
+  const cfg=STAGES[currentStage];
+  if(cfg.boss){ startBoss(); return; }
 
   document.getElementById('game-screen').classList.remove('hidden');
   document.getElementById('boss-screen').classList.add('hidden');
 
-  const area = document.getElementById('game-area');
-  area.querySelectorAll('.animal').forEach(e => e.remove());
-  area.style.background = SCENE_BG[cfg.scene];
-  animals = [];
-  if (animId) cancelAnimationFrame(animId);
+  const area=document.getElementById('game-area');
+  area.querySelectorAll('.animal,.animal-emoji').forEach(e=>e.remove());
+  area.style.background=SCENE_BG[cfg.scene];
+  animals=[];
+  if(animId) cancelAnimationFrame(animId);
   clearInterval(timerInterval);
 
-  // HUD
-  document.getElementById('stage-label').textContent = cfg.name;
-  for (let i = 0; i < 10; i++) {
-    const d = document.getElementById(`dot-${i}`);
-    if (!d) continue;
-    d.className = 'dot' + (i < currentStage ? ' done' : i === currentStage ? ' current' : '') + (i === 9 ? ' boss' : '');
+  document.getElementById('stage-label').textContent=cfg.name;
+  for(let i=0;i<10;i++){
+    const d=document.getElementById(`dot-${i}`);
+    if(!d) continue;
+    d.className='dot'+(i<currentStage?' done':i===currentStage?' current':'')+(STAGES[i].boss?' boss':'');
   }
 
-  // Timer
-  timeLeft = cfg.time;
-  updateTimerDisplay();
-  timerInterval = setInterval(() => {
+  timeLeft=cfg.time; updateTimerDisplay();
+  timerInterval=setInterval(()=>{
     timeLeft--;
     updateTimerDisplay();
-    if (timeLeft <= 0) {
-      gameRunning = false;
+    if(timeLeft<=0){
+      gameRunning=false;
       cancelAnimationFrame(animId);
       clearInterval(timerInterval);
       stopBGM();
       playGameOver();
-      document.getElementById('gameover-text').textContent = `${cfg.name} でうさぎに逃げられちゃった...`;
+      document.getElementById('gameover-text').textContent=`${cfg.name} でうさぎに逃げられちゃった...`;
       document.getElementById('gameover-screen').classList.remove('hidden');
     }
-  }, 1000);
+  },1000);
 
-  const W = window.innerWidth, H = window.innerHeight, sz = cfg.size;
-  const total = cfg.cats + cfg.dogs + 1;
-  const rabbitIdx = Math.floor(Math.random() * total);
+  const W=window.innerWidth, H=window.innerHeight, sz=cfg.size;
+  const total=cfg.cats+cfg.dogs+1;
+  const rabbitIdx=Math.floor(Math.random()*total);
+  let catIdx=0, dogIdx=0;
 
-  let catIdx = 0, dogIdx = 0;
-  for (let i = 0; i < total; i++) {
-    const isRabbit = i === rabbitIdx;
+  for(let i=0;i<total;i++){
+    const isRabbit=(i===rabbitIdx);
     let type;
-    if (isRabbit) {
-      type = 'rabbit';
-    } else if (catIdx < cfg.cats) {
-      type = 'cat';
+    if(isRabbit) type='rabbit';
+    else if(catIdx<cfg.cats) type='cat';
+    else type='dog';
+
+    let el;
+    if(cfg.emoji||sz<=28){
+      el=document.createElement('div');
+      el.className='animal-emoji';
+      const fs=Math.max(10,sz*0.72);
+      el.style.cssText=`width:${sz}px;height:${sz}px;font-size:${fs}px;`;
+      el.textContent=isRabbit?'🐰':type==='cat'?'🐱':'🐶';
     } else {
-      type = 'dog';
+      el=document.createElement('div');
+      el.className='animal';
+      el.style.cssText=`width:${sz}px;height:${sz}px;`;
+      if(isRabbit) el.innerHTML=makeRabbitSVG();
+      else if(type==='cat') el.innerHTML=makeCatSVG(catIdx);
+      else el.innerHTML=makeDogSVG(dogIdx);
     }
 
-    const el = document.createElement('div');
-    el.className = 'animal';
-    el.style.cssText = `width:${sz}px;height:${sz}px;`;
+    if(type==='cat') catIdx++;
+    else if(type==='dog') dogIdx++;
 
-    if (type === 'rabbit') {
-      el.innerHTML = makeRabbitSVG();
-    } else if (type === 'cat') {
-      el.innerHTML = makeCatSVG(catIdx++);
-    } else {
-      el.innerHTML = makeDogSVG(dogIdx++);
-    }
-
-    const x = sz + Math.random() * (W - sz * 2.5);
-    const y = HUD_H + sz + Math.random() * (H - HUD_H - sz * 2.5);
-    const ang = Math.random() * Math.PI * 2;
-    const spd = cfg.speed * (.8 + Math.random() * .4);
-
-    const a = { el, type, isRabbit, x, y,
-      dx: Math.cos(ang) * spd, dy: Math.sin(ang) * spd,
-      phase: Math.random() * Math.PI * 2,
-      turnChance: cfg.turnChance
-    };
-
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
-    el.addEventListener('click', () => onAnimalClick(a));
+    const x=sz+Math.random()*(W-sz*2.5);
+    const y=HUD_H+sz+Math.random()*(H-HUD_H-sz*2.5);
+    const ang=Math.random()*Math.PI*2;
+    const spd=cfg.speed*(.8+Math.random()*.4);
+    const a={ el, type, isRabbit, x, y, size:sz,
+      dx:Math.cos(ang)*spd, dy:Math.sin(ang)*spd,
+      phase:Math.random()*Math.PI*2, turnChance:cfg.turnChance };
+    el.style.left=x+'px'; el.style.top=y+'px';
+    el.addEventListener('click',()=>onAnimalClick(a));
     area.appendChild(el);
     animals.push(a);
   }
 
-  // Init glove
-  netX = W / 2;
-  netY = H / 2;
-  document.getElementById('net').style.display = 'block';
-
-  gameRunning = true;
-  startBGM();
-  loop();
+  netX=W/2; netY=H/2;
+  document.getElementById('net').style.display='block';
+  gameRunning=true; startBGM(); loop();
 }
 
-function updateTimerDisplay() {
-  const tb = document.getElementById('timer-box');
-  tb.textContent = '⏱️ ' + timeLeft + 's';
-  tb.classList.toggle('urgent', timeLeft <= 10);
+function updateTimerDisplay(){
+  const tb=document.getElementById('timer-box');
+  tb.textContent='⏱️ '+timeLeft+'s';
+  tb.classList.toggle('urgent',timeLeft<=10);
 }
-
-function loop() {
-  if (!gameRunning) return;
+function loop(){
+  if(!gameRunning) return;
   moveNet();
-  const W = window.innerWidth, H = window.innerHeight;
-  animals.forEach(a => {
-    a.phase += 0.042;
-    if (Math.random() < a.turnChance) {
-      const spd = Math.hypot(a.dx, a.dy);
-      const ang = Math.random() * Math.PI * 2;
-      a.dx = Math.cos(ang) * spd;
-      a.dy = Math.sin(ang) * spd;
+  const W=window.innerWidth, H=window.innerHeight;
+  animals.forEach(a=>{
+    a.phase+=0.042;
+    if(Math.random()<a.turnChance){
+      const spd=Math.hypot(a.dx,a.dy), ang=Math.random()*Math.PI*2;
+      a.dx=Math.cos(ang)*spd; a.dy=Math.sin(ang)*spd;
     }
-    const sz = parseInt(a.el.style.width);
-    a.x += a.dx; a.y += a.dy;
-    if (a.x < 0)      { a.x = 0;      a.dx =  Math.abs(a.dx); }
-    if (a.x > W - sz) { a.x = W - sz; a.dx = -Math.abs(a.dx); }
-    if (a.y < HUD_H)  { a.y = HUD_H;  a.dy =  Math.abs(a.dy); }
-    if (a.y > H - sz) { a.y = H - sz; a.dy = -Math.abs(a.dy); }
-    const bob = Math.sin(a.phase) * 3;
-    a.el.style.left = a.x + 'px';
-    a.el.style.top = (a.y + bob) + 'px';
+    const sz=a.size;
+    a.x+=a.dx; a.y+=a.dy;
+    if(a.x<0){a.x=0;a.dx=Math.abs(a.dx);}
+    if(a.x>W-sz){a.x=W-sz;a.dx=-Math.abs(a.dx);}
+    if(a.y<HUD_H){a.y=HUD_H;a.dy=Math.abs(a.dy);}
+    if(a.y>H-sz){a.y=H-sz;a.dy=-Math.abs(a.dy);}
+    const bob=Math.sin(a.phase)*3;
+    a.el.style.left=a.x+'px'; a.el.style.top=(a.y+bob)+'px';
   });
-  animId = requestAnimationFrame(loop);
+  animId=requestAnimationFrame(loop);
 }
-
-function onAnimalClick(a) {
-  if (!gameRunning) return;
-  const cx = a.x + parseInt(a.el.style.width) / 2;
-  if (a.isRabbit) {
-    gameRunning = false;
-    cancelAnimationFrame(animId);
-    clearInterval(timerInterval);
-    stopBGM();
-    playRabbitCatch();
-    playStageClear();
-    showPopup('みつけた！ 🐰✨', cx, a.y, '#FF5588');
-    spawnSparkles(cx, a.y, 18);
-    setTimeout(() => showStageClear(), 750);
+function onAnimalClick(a){
+  if(!gameRunning) return;
+  const cx=a.x+a.size/2;
+  if(a.isRabbit){
+    gameRunning=false;
+    cancelAnimationFrame(animId); clearInterval(timerInterval); stopBGM();
+    playRabbitCatch(); playStageClear();
+    showPopup('みつけた！ 🐰✨',cx,a.y,'#FF5588');
+    spawnSparkles(cx,a.y,18);
+    setTimeout(()=>showStageClear(),750);
   } else {
     playAngryCat();
-    showPopup(a.type === 'cat' ? 'フシャー！🐱💢' : 'ワン！🐶💢', cx, a.y, '#FF8844');
-    a.el.classList.remove('wrong');
-    void a.el.offsetWidth;
-    a.el.classList.add('wrong');
-    setTimeout(() => a.el.classList.remove('wrong'), 420);
-    timeLeft = Math.max(1, timeLeft - 3);
-    updateTimerDisplay();
+    showPopup(a.type==='cat'?'フシャー！🐱💢':'ワン！🐶💢',cx,a.y,'#FF8844');
+    a.el.classList.remove('wrong'); void a.el.offsetWidth; a.el.classList.add('wrong');
+    setTimeout(()=>a.el.classList.remove('wrong'),420);
+    timeLeft=Math.max(1,timeLeft-3); updateTimerDisplay();
   }
 }
-
-function showStageClear() {
-  document.getElementById('stage-clear-text').textContent = `${STAGES[currentStage].name} クリア！ 🎉`;
-  document.getElementById('clear-time-text').textContent = `残り時間: ${timeLeft}秒`;
+function showStageClear(){
+  document.getElementById('stage-clear-text').textContent=`${STAGES[currentStage].name} クリア！ 🎉`;
+  document.getElementById('clear-time-text').textContent=`残り時間: ${timeLeft}秒`;
   document.getElementById('stage-clear-screen').classList.remove('hidden');
-  document.getElementById('net').style.display = 'none';
-  for (let i = 0; i < 6; i++)
-    setTimeout(() => spawnSparkles(Math.random() * window.innerWidth, 50 + Math.random() * 120, 6), i * 120);
+  document.getElementById('net').style.display='none';
+  for(let i=0;i<6;i++) setTimeout(()=>spawnSparkles(Math.random()*window.innerWidth,50+Math.random()*120,6),i*120);
 }
-
-function nextStage() {
+function nextStage(){
   document.getElementById('stage-clear-screen').classList.add('hidden');
+  const justCleared=currentStage;
   currentStage++;
-  if (currentStage >= STAGES.length) {
-    showGameClear();
-  } else {
-    loadStage();
-  }
+  if(currentStage>=STAGES.length){ showEnding(); return; }
+  const story=STORIES[justCleared];
+  if(story){ showStory(story,()=>loadStage()); }
+  else loadStage();
 }
-
-function retryStage() {
+function retryStage(){
   document.getElementById('gameover-screen').classList.add('hidden');
   loadStage();
 }
 
-function showGameClear() {
-  document.getElementById('game-screen').classList.add('hidden');
-  playVictory();
+// ============================================================
+// STORY
+// ============================================================
+function showStory(storyData, afterFn){
+  currentStoryData=storyData; storyLineIdx=0; afterStoryFn=afterFn;
+  document.getElementById('story-stage-badge').textContent=storyData.badge;
+  document.getElementById('story-screen').classList.remove('hidden');
+  displayStoryLine();
+}
+function displayStoryLine(){
+  const line=currentStoryData.lines[storyLineIdx];
+  document.getElementById('story-speaker').textContent=line.spk;
+  document.getElementById('story-text-el').textContent=line.txt;
+  document.getElementById('story-cat').classList.toggle('active',line.who==='cat');
+  document.getElementById('story-rabbit').classList.toggle('active',line.who==='rabbit');
+}
+function advanceStory(){
+  storyLineIdx++;
+  if(storyLineIdx>=currentStoryData.lines.length){
+    document.getElementById('story-screen').classList.add('hidden');
+    if(afterStoryFn){ afterStoryFn(); afterStoryFn=null; }
+  } else {
+    displayStoryLine();
+  }
 }
 
-function resetGame() {
-  stopBGM();
-  clearInterval(timerInterval);
-  cancelAnimationFrame(animId);
-  stopBossLoop();
-  gameRunning = false;
-  bossRunning = false;
-  ['game-screen','boss-screen','stage-clear-screen','gameover-screen','game-clear-screen','ending-screen'].forEach(id => {
-    document.getElementById(id).classList.add('hidden');
-  });
-  document.getElementById('start-screen').classList.remove('hidden');
-}
+// ============================================================
+// BOSS BATTLE
+// ============================================================
+let bossRunning=false, bossAnimId=null;
+let playerCat={ x:0, y:0, hp:5, el:null };
+let playerMaxHp=5, playerInvincible=false;
+let bossRabbits=[];
+let bossTotalHpMax=0;
+let carrots=[], bossCarrotInterval=null;
+let earSpinElements=[], bossEarSpinning=false, bossEarSpinFrames=0, bossEarSpinAngle=0, bossEarCooldown=200;
 
-// ══════════════════════════════════════════════
-// BOSS BATTLE (Stage 10)
-// ══════════════════════════════════════════════
-let bossRunning = false;
-let bossAnimId = null;
-let playerCat = { x: 0, y: 0, hp: 5 };
-let bossRabbit = { x: 0, y: 0, hp: 10, dir: 1 };
-let carrots = [];
-let bossCarrotInterval = null;
-let playerInvincible = false;
-
-// Ear spin state
-let bossEarSpinning = false;
-let bossEarSpinFrames = 0;
-let bossEarSpinAngle = 0;
-let bossEarCooldown = 200;
-let earSpinElements = [];
-
-function startBoss() {
+function startBoss(){
+  const bossLevel=STAGES[currentStage].bossLevel||1;
   document.getElementById('game-screen').classList.add('hidden');
   document.getElementById('boss-screen').classList.remove('hidden');
-  document.getElementById('net').style.display = 'none';
+  document.getElementById('net').style.display='none';
 
-  for (let i = 0; i < 10; i++) {
-    const d = document.getElementById(`dot-${i}`);
-    if (!d) continue;
-    d.className = 'dot' + (i < 9 ? ' done' : ' current boss');
+  for(let i=0;i<10;i++){
+    const d=document.getElementById(`dot-${i}`);
+    if(!d) continue;
+    d.className='dot'+(i<currentStage?' done':i===currentStage?' current boss':'')+(STAGES[i].boss?' boss':'');
   }
 
-  const area = document.getElementById('boss-area');
-  area.innerHTML = '';
-  carrots = [];
-  earSpinElements = [];
-  bossEarSpinning = false;
-  bossEarCooldown = 200;
+  const area=document.getElementById('boss-area');
+  area.innerHTML='';
+  bossRabbits=[]; carrots=[]; earSpinElements=[]; bossEarSpinning=false; bossEarCooldown=200;
 
-  const W = window.innerWidth, H = window.innerHeight;
+  const W=window.innerWidth, H=window.innerHeight;
 
-  // Boss rabbit (SVG illustration)
-  const bossEl = document.createElement('div');
-  bossEl.id = 'boss-rabbit';
-  bossEl.style.cssText = 'width:120px;height:120px;';
-  bossEl.innerHTML = makeBossRabbitSVG();
-  area.appendChild(bossEl);
-  bossRabbit = { x: W/2 - 60, y: 80, hp: 10, dir: 1, el: bossEl };
-  bossEl.style.left = bossRabbit.x + 'px';
-  bossEl.style.top = bossRabbit.y + 'px';
+  if(bossLevel===1){
+    document.getElementById('boss-hud-title').textContent='⚔️ BOSS BATTLE ⚔️';
+    document.getElementById('boss-hp-label').textContent='🐰 ボスうさぎ HP';
+    const el=document.createElement('div');
+    el.className='boss-rabbit-el'; el.style.cssText='width:120px;height:120px;';
+    el.innerHTML=makeBossRabbitSVG(); area.appendChild(el);
+    const br={x:W/2-60,y:80,hp:10,dir:1,el,berserk:false,baseSpeed:3,rushTimer:0,rushCooldown:9999,rushDx:0,rushDy:0};
+    el.style.left=br.x+'px'; el.style.top=br.y+'px';
+    bossRabbits.push(br); bossTotalHpMax=10;
+  } else {
+    document.getElementById('boss-hud-title').textContent='⚔️⚔️ 最終ボス ×2 ⚔️⚔️';
+    document.getElementById('boss-hp-label').textContent='🐰🐰 ボスうさぎ ×2 HP';
+    for(let i=0;i<2;i++){
+      const el=document.createElement('div');
+      el.className='boss-rabbit-el'; el.style.cssText='width:120px;height:120px;';
+      el.innerHTML=makeBossRabbitSVG();
+      if(i===1){ el.style.borderColor='#FF4444'; el.style.boxShadow='0 0 30px rgba(255,68,68,.6)'; }
+      area.appendChild(el);
+      const br={
+        x: W/2-150+i*180, y:80, hp:8,
+        dir: i===0?1:-1, el, berserk:false, baseSpeed:3.8,
+        rushTimer:0, rushCooldown:280+i*120, rushDx:0, rushDy:0
+      };
+      el.style.left=br.x+'px'; el.style.top=br.y+'px';
+      bossRabbits.push(br);
+    }
+    bossTotalHpMax=16;
+  }
 
-  // Player cat (SVG illustration)
-  const catEl = document.createElement('div');
-  catEl.id = 'player-cat';
-  catEl.style.cssText = 'width:70px;height:70px;';
-  catEl.innerHTML = makeCatSVG(0);
-  area.appendChild(catEl);
-  playerCat = { x: W/2 - 35, y: H - 130, hp: 5, el: catEl };
-  catEl.style.left = playerCat.x + 'px';
-  catEl.style.top = playerCat.y + 'px';
+  // Player cat
+  const catEl=document.createElement('div');
+  catEl.id='player-cat'; catEl.style.cssText='width:70px;height:70px;';
+  catEl.innerHTML=makeCatSVG(0); area.appendChild(catEl);
+  playerCat={x:W/2-35,y:H-130,hp:5,el:catEl};
+  playerMaxHp=5;
+  catEl.style.left=playerCat.x+'px'; catEl.style.top=playerCat.y+'px';
 
-  // HP bars
-  document.getElementById('player-hp-bar').style.width = '100%';
-  document.getElementById('boss-hp-bar').style.width = '100%';
-
-  playerInvincible = false;
-  bossRunning = true;
+  document.getElementById('player-hp-bar').style.width='100%';
+  document.getElementById('boss-hp-bar').style.width='100%';
+  playerInvincible=false;
+  bossRunning=true;
   playBossMusic();
 
-  bossCarrotInterval = setInterval(() => {
-    if (!bossRunning) return;
-    spawnCarrot();
-  }, 800);
+  const cInterval=bossLevel===1?800:550;
+  bossCarrotInterval=setInterval(()=>{
+    if(!bossRunning) return;
+    for(const br of bossRabbits) spawnCarrot(br);
+    if(bossLevel===2) for(const br of bossRabbits) spawnCarrot(br); // double carrots
+  },cInterval);
 
   bossLoop();
 }
 
-function spawnCarrot() {
-  const area = document.getElementById('boss-area');
-  const el = document.createElement('div');
-  el.className = 'carrot';
-  el.textContent = '🥕';
-  const cx = bossRabbit.x + 60;
-  const cy = bossRabbit.y + 120;
-  const dx = playerCat.x + 35 - cx;
-  const dy = playerCat.y + 35 - cy;
-  const dist = Math.hypot(dx, dy) || 1;
-  const speed = 4 + Math.random() * 2;
-  const c = { el, x: cx, y: cy, dx: dx/dist * speed, dy: dy/dist * speed };
-  el.style.left = c.x + 'px';
-  el.style.top = c.y + 'px';
-  area.appendChild(el);
-  carrots.push(c);
+function updateBossHPBar(){
+  const cur=bossRabbits.reduce((s,br)=>s+Math.max(0,br.hp),0);
+  document.getElementById('boss-hp-bar').style.width=Math.max(0,cur/bossTotalHpMax*100)+'%';
 }
 
-function playerTakeDamage() {
-  playerCat.hp--;
-  playHit();
-  document.getElementById('player-hp-bar').style.width = Math.max(0, playerCat.hp / 5 * 100) + '%';
+function spawnCarrot(fromBoss){
+  if(!fromBoss) return;
+  const area=document.getElementById('boss-area');
+  const el=document.createElement('div'); el.className='carrot'; el.textContent='🥕';
+  const cx=fromBoss.x+60, cy=fromBoss.y+120;
+  const tdx=playerCat.x+35-cx, tdy=playerCat.y+35-cy;
+  const dist=Math.hypot(tdx,tdy)||1;
+  const spd=(fromBoss.berserk?8:5)+Math.random()*2;
+  // Add slight spread
+  const spread=(Math.random()-.5)*.4;
+  const angle=Math.atan2(tdy,tdx)+spread;
+  const c={el,x:cx,y:cy,dx:Math.cos(angle)*spd,dy:Math.sin(angle)*spd};
+  el.style.left=c.x+'px'; el.style.top=c.y+'px';
+  area.appendChild(el); carrots.push(c);
+}
 
-  playerInvincible = true;
-  if (playerCat.el) playerCat.el.style.opacity = '0.4';
-  setTimeout(() => {
-    playerInvincible = false;
-    if (playerCat.el) playerCat.el.style.opacity = '1';
-  }, 1000);
-
-  if (playerCat.hp <= 0) {
-    bossRunning = false;
-    stopBossLoop();
-    stopBGM();
-    playGameOver();
+function playerTakeDamage(){
+  playerCat.hp--; playHit();
+  document.getElementById('player-hp-bar').style.width=Math.max(0,playerCat.hp/playerMaxHp*100)+'%';
+  playerInvincible=true;
+  if(playerCat.el) playerCat.el.style.opacity='.4';
+  setTimeout(()=>{ playerInvincible=false; if(playerCat.el) playerCat.el.style.opacity='1'; },900);
+  if(playerCat.hp<=0){
+    bossRunning=false; stopBossLoop(); stopBGM(); playGameOver();
     document.getElementById('boss-screen').classList.add('hidden');
-    document.getElementById('gameover-text').textContent = 'ボスうさぎに負けちゃった...';
+    document.getElementById('gameover-text').textContent='ボスうさぎに負けちゃった...';
     document.getElementById('gameover-screen').classList.remove('hidden');
   }
 }
 
-function bossAttack() {
-  if (!bossRunning) return;
-  const dx = (playerCat.x + 35) - (bossRabbit.x + 60);
-  const dy = (playerCat.y + 35) - (bossRabbit.y + 60);
-  const dist = Math.hypot(dx, dy);
-  if (dist < 120) {
-    bossRabbit.hp--;
-    playPunch();
-    document.getElementById('boss-hp-bar').style.width = Math.max(0, bossRabbit.hp / 10 * 100) + '%';
+function showCatPaw(bossX, bossY){
+  const area=document.getElementById('boss-area');
+  const paw=document.createElement('div');
+  paw.className='cat-paw-ext'; paw.textContent='🐾';
+  const mx=(playerCat.x+35+bossX)/2-26;
+  const my=(playerCat.y+35+bossY)/2-26;
+  paw.style.left=mx+'px'; paw.style.top=my+'px';
+  area.appendChild(paw);
+  setTimeout(()=>paw.remove(),500);
+}
 
-    // Cat scratch animation on player
-    if (playerCat.el) {
-      playerCat.el.classList.add('scratching');
-      setTimeout(() => playerCat.el && playerCat.el.classList.remove('scratching'), 300);
-    }
-
-    // Claw marks on boss
-    showScratch(bossRabbit.x + 60, bossRabbit.y + 60);
-
-    // Knockback — clamped to screen bounds
-    const W = window.innerWidth;
-    bossRabbit.x = Math.max(10, Math.min(W - 130, bossRabbit.x + (dx > 0 ? -35 : 35)));
-
-    if (bossRabbit.hp <= 0) {
-      bossRunning = false;
-      stopBossLoop();
-      stopBGM();
-      playVictory();
-      setTimeout(() => showEnding(), 1000);
-    }
+function bossAttack(){
+  if(!bossRunning) return;
+  // Find nearest boss for paw direction
+  let nearest=null, nearestDist=Infinity;
+  for(const br of bossRabbits){
+    const d=Math.hypot((playerCat.x+35)-(br.x+60),(playerCat.y+35)-(br.y+60));
+    if(d<nearestDist){ nearestDist=d; nearest=br; }
   }
-}
+  if(nearest) showCatPaw(nearest.x+60, nearest.y+60);
 
-function showScratch(x, y) {
-  const area = document.getElementById('boss-area');
-  const eff = document.createElement('div');
-  eff.className = 'scratch-effect';
-  eff.innerHTML = `<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-    <line x1="14" y1="8"  x2="34" y2="72" stroke="#FF2222" stroke-width="6" stroke-linecap="round"/>
-    <line x1="29" y1="5"  x2="49" y2="75" stroke="#FF5555" stroke-width="5" stroke-linecap="round"/>
-    <line x1="44" y1="8"  x2="64" y2="72" stroke="#FF2222" stroke-width="6" stroke-linecap="round"/>
-  </svg>`;
-  eff.style.cssText = `position:absolute;left:${x-40}px;top:${y-40}px;z-index:35;pointer-events:none;`;
-  area.appendChild(eff);
-  setTimeout(() => eff.remove(), 500);
-}
-
-function startEarSpin() {
-  bossEarSpinning = true;
-  bossEarSpinFrames = 0;
-  bossEarSpinAngle = 0;
-
-  // Warning popup
-  const warn = document.createElement('div');
-  warn.className = 'popup';
-  warn.textContent = '👂 耳振り回し！ 👂';
-  warn.style.cssText = `left:${bossRabbit.x + 60}px;top:${bossRabbit.y + 145}px;color:#FFCC00;font-size:1.2rem;`;
-  document.getElementById('boss-area').appendChild(warn);
-  setTimeout(() => warn.remove(), 900);
-
-  const area = document.getElementById('boss-area');
-  for (let i = 0; i < 2; i++) {
-    const ear = document.createElement('div');
-    ear.className = 'ear-spin';
-    ear.textContent = '👂';
-    area.appendChild(ear);
-    earSpinElements.push(ear);
-  }
-}
-
-function stopEarSpin() {
-  bossEarSpinning = false;
-  earSpinElements.forEach(el => el.remove());
-  earSpinElements = [];
-}
-
-function bossLoop() {
-  if (!bossRunning) return;
-
-  const W = window.innerWidth, H = window.innerHeight;
-
-  // Move player
-  if (keys['ArrowLeft'] || keys['a'])  playerCat.x = Math.max(0, playerCat.x - 5);
-  if (keys['ArrowRight'] || keys['d']) playerCat.x = Math.min(W - 70, playerCat.x + 5);
-  if (keys['ArrowUp'] || keys['w'])    playerCat.y = Math.max(60, playerCat.y - 5);
-  if (keys['ArrowDown'] || keys['s'])  playerCat.y = Math.min(H - 70, playerCat.y + 5);
-  playerCat.el.style.left = playerCat.x + 'px';
-  playerCat.el.style.top = playerCat.y + 'px';
-
-  // Move boss — clamped
-  bossRabbit.x += bossRabbit.dir * 3;
-  bossRabbit.x = Math.max(10, Math.min(W - 130, bossRabbit.x));
-  if (bossRabbit.x <= 10 || bossRabbit.x >= W - 130) bossRabbit.dir *= -1;
-  const bob = Math.sin(Date.now() / 300) * 8;
-  bossRabbit.el.style.left = bossRabbit.x + 'px';
-  bossRabbit.el.style.top = (bossRabbit.y + bob) + 'px';
-
-  // Ear spin cooldown
-  bossEarCooldown--;
-  if (bossEarCooldown <= 0 && !bossEarSpinning) {
-    bossEarCooldown = 300 + Math.floor(Math.random() * 120);
-    startEarSpin();
+  // Cat scratch animation
+  if(playerCat.el){
+    playerCat.el.classList.remove('scratching'); void playerCat.el.offsetWidth;
+    playerCat.el.classList.add('scratching');
+    setTimeout(()=>playerCat.el&&playerCat.el.classList.remove('scratching'),300);
   }
 
-  // Ear spin update
-  if (bossEarSpinning) {
-    bossEarSpinAngle += 0.12;
-    bossEarSpinFrames++;
-    const cx = bossRabbit.x + 60;
-    const cy = bossRabbit.y + 60;
-    for (let ei = 0; ei < earSpinElements.length; ei++) {
-      const a = bossEarSpinAngle + ei * Math.PI;
-      const ex = cx + Math.cos(a) * 90;
-      const ey = cy + Math.sin(a) * 90;
-      earSpinElements[ei].style.left = (ex - 20) + 'px';
-      earSpinElements[ei].style.top  = (ey - 20) + 'px';
-      earSpinElements[ei].style.transform = `rotate(${a + Math.PI/2}rad)`;
-
-      if (!playerInvincible) {
-        if (Math.hypot((playerCat.x + 35) - ex, (playerCat.y + 35) - ey) < 48) {
-          playerTakeDamage();
-          if (!bossRunning) return;
-          break;
+  // Check hit
+  let hitAny=false;
+  for(let i=bossRabbits.length-1;i>=0;i--){
+    const br=bossRabbits[i];
+    const dx=(playerCat.x+35)-(br.x+60), dy=(playerCat.y+35)-(br.y+60);
+    if(Math.hypot(dx,dy)<120){
+      br.hp--; hitAny=true; playPunch();
+      showScratch(br.x+60, br.y+60);
+      const W=window.innerWidth;
+      br.x=Math.max(10,Math.min(W-130, br.x+(dx>0?-38:38)));
+      br.el.style.left=br.x+'px';
+      updateBossHPBar();
+      if(br.hp<=0){
+        br.el.remove(); bossRabbits.splice(i,1);
+        if(bossRabbits.length===0){
+          bossRunning=false; stopBossLoop(); stopBGM(); playVictory();
+          setTimeout(()=>{
+            document.getElementById('boss-screen').classList.add('hidden');
+            const story=STORIES[currentStage];
+            const justCleared=currentStage;
+            currentStage++;
+            if(currentStage>=STAGES.length){ showEnding(); }
+            else if(story){ showStory(story,()=>loadStage()); }
+            else loadStage();
+          },1000);
+          return;
+        } else {
+          // Berserk!
+          const rem=bossRabbits[0];
+          rem.berserk=true;
+          rem.el.classList.add('berserk');
+          rem.baseSpeed=9;
+          rem.rushCooldown=120;
+          clearInterval(bossCarrotInterval);
+          bossCarrotInterval=setInterval(()=>{ if(!bossRunning) return; spawnCarrot(rem); spawnCarrot(rem); spawnCarrot(rem); },300);
+          showBossWarning('💢 バーサーク！！ 💢','#FF2200');
         }
       }
+      break;
     }
-    if (bossEarSpinFrames > 150) stopEarSpin();
+  }
+  if(!hitAny){
+    showPopupInArea('とどかない！',playerCat.x+35,playerCat.y,'#FFAA00');
+  }
+}
+
+function showBossWarning(text,color){
+  const el=document.createElement('div');
+  el.className='boss-warning'; el.textContent=text;
+  el.style.color=color; el.style.textShadow=`0 0 20px ${color}`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),900);
+}
+
+function showPopupInArea(text,x,y,color){
+  const area=document.getElementById('boss-area');
+  const el=document.createElement('div');
+  el.className='popup'; el.textContent=text;
+  el.style.cssText=`left:${x}px;top:${y-10}px;color:${color};position:absolute;`;
+  area.appendChild(el);
+  setTimeout(()=>el.remove(),950);
+}
+
+function showScratch(x,y){
+  const area=document.getElementById('boss-area');
+  const eff=document.createElement('div');
+  eff.className='scratch-effect';
+  eff.innerHTML=`<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <line x1="14" y1="8" x2="34" y2="72" stroke="#FF2222" stroke-width="6" stroke-linecap="round"/>
+    <line x1="29" y1="5" x2="49" y2="75" stroke="#FF5555" stroke-width="5" stroke-linecap="round"/>
+    <line x1="44" y1="8" x2="64" y2="72" stroke="#FF2222" stroke-width="6" stroke-linecap="round"/>
+  </svg>`;
+  eff.style.cssText=`position:absolute;left:${x-40}px;top:${y-40}px;z-index:35;pointer-events:none;`;
+  area.appendChild(eff);
+  setTimeout(()=>eff.remove(),500);
+}
+
+function startEarSpin(){
+  bossEarSpinning=true; bossEarSpinFrames=0; bossEarSpinAngle=0;
+  const br=bossRabbits[0]; if(!br) return;
+  const warn=document.createElement('div');
+  warn.className='popup'; warn.textContent='👂 耳振り回し！ 👂';
+  warn.style.cssText=`left:${br.x+60}px;top:${br.y+145}px;color:#FFCC00;font-size:1.2rem;`;
+  document.getElementById('boss-area').appendChild(warn);
+  setTimeout(()=>warn.remove(),900);
+  const area=document.getElementById('boss-area');
+  for(let i=0;i<2;i++){
+    const ear=document.createElement('div'); ear.className='ear-spin'; ear.textContent='👂';
+    area.appendChild(ear); earSpinElements.push(ear);
+  }
+}
+function stopEarSpin(){ bossEarSpinning=false; earSpinElements.forEach(e=>e.remove()); earSpinElements=[]; }
+
+function bossLoop(){
+  if(!bossRunning) return;
+  const W=window.innerWidth, H=window.innerHeight;
+
+  // Move player
+  if(keys['ArrowLeft']||keys['a'])  playerCat.x=Math.max(0,playerCat.x-5);
+  if(keys['ArrowRight']||keys['d']) playerCat.x=Math.min(W-70,playerCat.x+5);
+  if(keys['ArrowUp']||keys['w'])    playerCat.y=Math.max(60,playerCat.y-5);
+  if(keys['ArrowDown']||keys['s'])  playerCat.y=Math.min(H-70,playerCat.y+5);
+  playerCat.el.style.left=playerCat.x+'px'; playerCat.el.style.top=playerCat.y+'px';
+
+  // Move each boss rabbit
+  for(const br of bossRabbits){
+    if(!br.el) continue;
+    br.rushCooldown--;
+
+    if(br.berserk && br.rushCooldown<=0 && br.rushTimer<=0){
+      // Start rush
+      const rdx=(playerCat.x+35)-(br.x+60), rdy=(playerCat.y+35)-(br.y+60);
+      const rdist=Math.hypot(rdx,rdy)||1;
+      br.rushDx=rdx/rdist*14; br.rushDy=rdy/rdist*14;
+      br.rushTimer=55;
+      br.rushCooldown=150+Math.floor(Math.random()*80);
+      showBossWarning('⚡ RUSH！ ⚡','#FF6600');
+    }
+
+    if(br.rushTimer>0){
+      br.x+=br.rushDx; br.y+=br.rushDy; br.rushTimer--;
+      br.x=Math.max(10,Math.min(W-130,br.x));
+      br.y=Math.max(60,Math.min(H*0.5,br.y));
+      // Collision with player during rush
+      if(!playerInvincible){
+        if(Math.hypot((playerCat.x+35)-(br.x+60),(playerCat.y+35)-(br.y+60))<70){
+          playerTakeDamage(); if(!bossRunning) return;
+        }
+      }
+    } else {
+      br.x+=br.dir*br.baseSpeed;
+      br.x=Math.max(10,Math.min(W-130,br.x));
+      if(br.x<=10||br.x>=W-130) br.dir*=-1;
+    }
+    const bob=Math.sin(Date.now()/300)*8;
+    br.el.style.left=br.x+'px'; br.el.style.top=(br.y+bob)+'px';
+  }
+
+  // Ear spin (boss level 1 only)
+  if(STAGES[currentStage]&&STAGES[currentStage].bossLevel===1){
+    bossEarCooldown--;
+    if(bossEarCooldown<=0&&!bossEarSpinning){ bossEarCooldown=280+Math.floor(Math.random()*120); startEarSpin(); }
+    if(bossEarSpinning){
+      bossEarSpinAngle+=0.12; bossEarSpinFrames++;
+      const br=bossRabbits[0]; if(br){
+        const cx=br.x+60, cy=br.y+60;
+        for(let ei=0;ei<earSpinElements.length;ei++){
+          const a=bossEarSpinAngle+ei*Math.PI;
+          const ex=cx+Math.cos(a)*90, ey=cy+Math.sin(a)*90;
+          earSpinElements[ei].style.left=(ex-20)+'px';
+          earSpinElements[ei].style.top=(ey-20)+'px';
+          earSpinElements[ei].style.transform=`rotate(${a+Math.PI/2}rad)`;
+          if(!playerInvincible&&Math.hypot((playerCat.x+35)-ex,(playerCat.y+35)-ey)<48){
+            playerTakeDamage(); if(!bossRunning) return; break;
+          }
+        }
+      }
+      if(bossEarSpinFrames>150) stopEarSpin();
+    }
   }
 
   // Move carrots & collision
-  for (let i = carrots.length - 1; i >= 0; i--) {
-    const c = carrots[i];
-    c.x += c.dx;
-    c.y += c.dy;
-    c.el.style.left = c.x + 'px';
-    c.el.style.top = c.y + 'px';
-
-    if (c.x < -50 || c.x > W + 50 || c.y < -50 || c.y > H + 50) {
-      c.el.remove();
-      carrots.splice(i, 1);
-      continue;
-    }
-
-    if (!playerInvincible) {
-      const hx = (playerCat.x + 35) - c.x;
-      const hy = (playerCat.y + 35) - c.y;
-      if (Math.hypot(hx, hy) < 40) {
-        c.el.remove();
-        carrots.splice(i, 1);
-        playerTakeDamage();
-        if (!bossRunning) return;
+  for(let i=carrots.length-1;i>=0;i--){
+    const c=carrots[i];
+    c.x+=c.dx; c.y+=c.dy;
+    c.el.style.left=c.x+'px'; c.el.style.top=c.y+'px';
+    if(c.x<-50||c.x>W+50||c.y<-50||c.y>H+50){ c.el.remove(); carrots.splice(i,1); continue; }
+    if(!playerInvincible){
+      if(Math.hypot((playerCat.x+35)-c.x,(playerCat.y+35)-c.y)<40){
+        c.el.remove(); carrots.splice(i,1);
+        playerTakeDamage(); if(!bossRunning) return;
       }
     }
   }
 
-  bossAnimId = requestAnimationFrame(bossLoop);
+  bossAnimId=requestAnimationFrame(bossLoop);
 }
-
-function stopBossLoop() {
-  if (bossAnimId) { cancelAnimationFrame(bossAnimId); bossAnimId = null; }
-  if (bossCarrotInterval) { clearInterval(bossCarrotInterval); bossCarrotInterval = null; }
+function stopBossLoop(){
+  if(bossAnimId){ cancelAnimationFrame(bossAnimId); bossAnimId=null; }
+  if(bossCarrotInterval){ clearInterval(bossCarrotInterval); bossCarrotInterval=null; }
   stopEarSpin();
 }
 
-// ══════════════════════════════════════════════
+// ============================================================
 // ENDING
-// ══════════════════════════════════════════════
-function showEnding() {
+// ============================================================
+function showEnding(){
   document.getElementById('boss-screen').classList.add('hidden');
-  const endScreen = document.getElementById('ending-screen');
+  document.getElementById('game-screen').classList.add('hidden');
+  const endScreen=document.getElementById('ending-screen');
   endScreen.classList.remove('hidden');
-
-  const scene = document.getElementById('ending-scene');
-  scene.innerHTML = '';
-  ['🐱','🐱','🐱','🐱','🐶','🐶','🐰','🐰'].forEach(emoji => {
-    const span = document.createElement('span');
-    span.className = 'ending-animal';
-    span.textContent = emoji;
-    scene.appendChild(span);
+  const scene=document.getElementById('ending-scene');
+  scene.innerHTML='';
+  ['🐱','🐰','💕','🐱','🐰','💕','🐱','🐰'].forEach(e=>{
+    const span=document.createElement('span'); span.className='ending-animal'; span.textContent=e; scene.appendChild(span);
   });
-
-  for (let i = 0; i < 30; i++) {
-    setTimeout(() => spawnSparkles(Math.random() * window.innerWidth, 20 + Math.random() * window.innerHeight * 0.6, 4), i * 150);
-  }
-
+  for(let i=0;i<30;i++) setTimeout(()=>spawnSparkles(Math.random()*window.innerWidth,20+Math.random()*window.innerHeight*.6,4),i*150);
   stopBGM();
-  const endNotes = [523, 587, 659, 784, 659, 784, 880, 1047, 880, 784, 659, 784, 1047, 880, 784, 659];
-  let idx = 0;
-  bgmInterval = setInterval(() => {
-    if (isMuted) return;
-    playNote(endNotes[idx % endNotes.length], 0.3, 'triangle', 0.08);
-    playNote(endNotes[idx % endNotes.length] * 0.5, 0.4, 'sine', 0.04);
+  const endNotes=[523,587,659,784,659,784,880,1047,880,784,659,784,1047,880,784,659];
+  let idx=0;
+  bgmInterval=setInterval(()=>{
+    if(isMuted) return;
+    playNote(endNotes[idx%endNotes.length],.3,'triangle',.08);
+    playNote(endNotes[idx%endNotes.length]*.5,.4,'sine',.04);
     idx++;
-  }, 350);
+  },350);
 }
 
-// ══════════════════════════════════════════════
+// ============================================================
 // EFFECTS
-// ══════════════════════════════════════════════
-function showPopup(text, x, y, color) {
-  const el = document.createElement('div');
-  el.className = 'popup';
-  el.textContent = text;
-  el.style.cssText = `left:${x}px;top:${y - 10}px;color:${color};`;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 950);
+// ============================================================
+function showPopup(text,x,y,color){
+  const el=document.createElement('div'); el.className='popup'; el.textContent=text;
+  el.style.cssText=`left:${x}px;top:${y-10}px;color:${color};`;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),950);
+}
+function spawnSparkles(x,y,count){
+  const pool=['✨','⭐','💕','🎉','💫','🌟','💖','🎊','🌸'];
+  for(let i=0;i<count;i++){
+    const el=document.createElement('div'); el.className='sparkle';
+    el.textContent=pool[Math.floor(Math.random()*pool.length)];
+    el.style.cssText=`left:${x-40+Math.random()*80}px;top:${y-10}px;font-size:${.9+Math.random()*1.1}rem;animation-delay:${Math.random()*.3}s;`;
+    document.body.appendChild(el); setTimeout(()=>el.remove(),1300);
+  }
 }
 
-function spawnSparkles(x, y, count) {
-  const pool = ['✨','⭐','💕','🎉','💫','🌟','💖','🎊','🌸'];
-  for (let i = 0; i < count; i++) {
-    const el = document.createElement('div');
-    el.className = 'sparkle';
-    el.textContent = pool[Math.floor(Math.random() * pool.length)];
-    el.style.cssText = `left:${x - 40 + Math.random() * 80}px;top:${y - 10}px;font-size:${.9 + Math.random() * 1.1}rem;animation-delay:${Math.random() * .3}s;`;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1300);
-  }
+// ============================================================
+// GAME CONTROL
+// ============================================================
+function resetGame(){
+  stopBGM(); clearInterval(timerInterval); cancelAnimationFrame(animId); stopBossLoop();
+  gameRunning=false; bossRunning=false;
+  ['game-screen','boss-screen','stage-clear-screen','gameover-screen','ending-screen','story-screen'].forEach(id=>{
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('start-screen').classList.remove('hidden');
 }
 </script>
 </body>
