@@ -18,6 +18,7 @@
     .btn:active { transform: translateY(1px); }
     .btn-pink { background: linear-gradient(135deg, #FF7AAB, #FF4488); }
     .btn-gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
+    .btn-focus { outline: 4px solid white; transform: translateY(-3px) scale(1.07) !important; box-shadow: 0 8px 28px rgba(0,0,0,.35) !important; }
     #game-screen { position: fixed; inset: 0; z-index: 100; }
     #game-screen.hidden { display: none; }
     #game-area { width: 100%; height: 100%; position: relative; overflow: hidden; }
@@ -116,7 +117,7 @@
     ⏱️ 制限時間内にうさぎを見つけよう！<br>
     📖 ねことうさぎの物語も楽しんでね！
   </div>
-  <button class="btn btn-pink" onclick="startGame()">▶ START</button>
+  <button class="btn btn-pink btn-focus" id="start-btn" onclick="startGame()">▶ START</button>
 </div>
 
 <!-- GAME SCREEN -->
@@ -143,8 +144,9 @@
 <div id="gameover-screen" class="screen hidden">
   <div class="gameover-title">⏱️ タイムアップ！</div>
   <div class="gameover-sub" id="gameover-text">うさぎに逃げられちゃった...</div>
-  <button class="btn btn-pink" onclick="retryStage()">🔄 もう一度</button>
-  <button class="btn btn-gold" onclick="resetGame()">🏠 タイトルへ</button>
+  <button class="btn btn-pink" id="gameover-retry-btn" onclick="retryStage()">🔄 もう一度</button>
+  <button class="btn btn-gold" id="gameover-title-btn" onclick="resetGame()">🏠 タイトルへ</button>
+  <div class="space-hint" style="margin-top:2px">↑↓ で選択 / スペース で決定</div>
 </div>
 
 <!-- BOSS SCREEN -->
@@ -277,6 +279,28 @@ function makeRabbitSVG(){
     <line x1="58" y1="77" x2="90" y2="79" stroke="#FFBBCC" stroke-width="1.5" opacity=".7"/>
   </svg>`;
 }
+function makeDisguisedRabbitSVG(variantIdx){
+  const c=CAT_VARIANTS[variantIdx%CAT_VARIANTS.length];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <ellipse cx="34" cy="20" rx="10" ry="24" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <ellipse cx="66" cy="20" rx="10" ry="24" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <ellipse cx="34" cy="20" rx="5.5" ry="20" fill="${c.inner}"/>
+    <ellipse cx="66" cy="20" rx="5.5" ry="20" fill="${c.inner}"/>
+    <circle cx="50" cy="63" r="34" fill="${c.body}" stroke="${c.dark}" stroke-width="2"/>
+    <ellipse cx="36" cy="60" rx="9" ry="10" fill="white"/>
+    <ellipse cx="64" cy="60" rx="9" ry="10" fill="white"/>
+    <ellipse cx="36" cy="62" rx="6" ry="8" fill="${c.eye}"/>
+    <ellipse cx="64" cy="62" rx="6" ry="8" fill="${c.eye}"/>
+    <circle cx="36" cy="62" r="4" fill="#111"/><circle cx="64" cy="62" r="4" fill="#111"/>
+    <circle cx="38" cy="60" r="1.5" fill="white"/><circle cx="66" cy="60" r="1.5" fill="white"/>
+    <polygon points="50,69 46,74 54,74" fill="#FF88AA"/>
+    <path d="M46,74 Q50,79 54,74" fill="none" stroke="#DD5577" stroke-width="1.5"/>
+    <line x1="8" y1="69" x2="42" y2="71" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+    <line x1="8" y1="75" x2="42" y2="73" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+    <line x1="58" y1="71" x2="92" y2="69" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+    <line x1="58" y1="73" x2="92" y2="75" stroke="${c.dark}" stroke-width="1.5" opacity=".55"/>
+  </svg>`;
+}
 function makeBossRabbitSVG(){
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
     <polygon points="28,32 38,14 50,26 62,14 72,32" fill="#FFD700" stroke="#CC9900" stroke-width="1.5"/>
@@ -308,15 +332,15 @@ function makeBossRabbitSVG(){
 // STAGE CONFIG  (stage index 4 = ステージ5 BOSS lv1, index 9 = ステージ10 BOSS lv2)
 // ============================================================
 const STAGES = [
-  { cats:5,   dogs:2,  size:65, speed:1.3, turnChance:.003, time:60, scene:'garden', name:'ステージ 1 - お庭',   emoji:false },
-  { cats:8,   dogs:3,  size:62, speed:1.7, turnChance:.005, time:55, scene:'house',  name:'ステージ 2 - おうち', emoji:false },
-  { cats:15,  dogs:5,  size:56, speed:2.1, turnChance:.007, time:50, scene:'school', name:'ステージ 3 - 学校',   emoji:false },
-  { cats:28,  dogs:8,  size:50, speed:2.6, turnChance:.010, time:44, scene:'park',   name:'ステージ 4 - 公園',   emoji:false },
+  { cats:3,   dogs:2,  size:65, speed:1.3, turnChance:.003, time:60, scene:'garden', name:'ステージ 1 - お庭',   emoji:false, disguised:false },
+  { cats:4,   dogs:2,  size:62, speed:1.7, turnChance:.005, time:55, scene:'house',  name:'ステージ 2 - おうち', emoji:false, disguised:false },
+  { cats:8,   dogs:3,  size:56, speed:2.1, turnChance:.007, time:50, scene:'school', name:'ステージ 3 - 学校',   emoji:false, disguised:false },
+  { cats:14,  dogs:4,  size:50, speed:2.6, turnChance:.010, time:44, scene:'park',   name:'ステージ 4 - 公園',   emoji:false, disguised:false },
   { boss:true, bossLevel:1, scene:'boss', name:'ステージ 5 - ボス戦！' },
-  { cats:50,  dogs:0,  size:44, speed:3.2, turnChance:.013, time:38, scene:'market', name:'ステージ 6 - 商店街', emoji:true  },
-  { cats:100, dogs:0,  size:35, speed:3.7, turnChance:.016, time:31, scene:'beach',  name:'ステージ 7 - ビーチ', emoji:true  },
-  { cats:180, dogs:0,  size:28, speed:4.2, turnChance:.020, time:25, scene:'forest', name:'ステージ 8 - 森',     emoji:true  },
-  { cats:400, dogs:0,  size:20, speed:5.0, turnChance:.025, time:20, scene:'space',  name:'ステージ 9 - 宇宙',   emoji:true  },
+  { cats:25,  dogs:0,  size:44, speed:3.2, turnChance:.013, time:40, scene:'market', name:'ステージ 6 - 商店街', emoji:false, disguised:true  },
+  { cats:50,  dogs:0,  size:35, speed:3.7, turnChance:.016, time:33, scene:'beach',  name:'ステージ 7 - ビーチ', emoji:false, disguised:true  },
+  { cats:90,  dogs:0,  size:28, speed:4.2, turnChance:.020, time:27, scene:'forest', name:'ステージ 8 - 森',     emoji:false, disguised:true  },
+  { cats:200, dogs:0,  size:22, speed:5.0, turnChance:.025, time:22, scene:'space',  name:'ステージ 9 - 宇宙',   emoji:false, disguised:true  },
   { boss:true, bossLevel:2, scene:'boss', name:'ステージ 10 - 最終ボス戦！！' },
 ];
 
@@ -372,6 +396,8 @@ const STORIES = [
     { who:'rabbit', spk:'🐰 うさぎ', txt:'...なんで怒らないんだ？勝ったのに、なんでそんな顔してるんだ。' },
     { who:'cat',    spk:'🐱 ねこ',   txt:'だって、勝負が終わったらもう仲間でしょ。...そう思ってるのは僕だけ？' },
     { who:'rabbit', spk:'🐰 うさぎ', txt:'...（そっぽを向く。でも、ほんの少しだけ表情が柔らかくなる）' },
+    { who:'rabbit', spk:'🐰 うさぎ', txt:'...くっ！でもまだ終わりじゃないぞ！次こそは絶対に捕まらない！そうだ...次は猫の色になってまぎれてやる！耳さえ長ければ...いや、誰も気づかないはずだ！ふふふ...！' },
+    { who:'cat',    spk:'🐱 ねこ',   txt:'え、耳は隠せないの...？（絶対すぐわかるよ...）' },
   ]},
   // 5: after stage 6
   { badge:'ステージ6クリア後', lines:[
@@ -474,6 +500,7 @@ let currentStage=0, animals=[], animId=null, gameRunning=false, timeLeft=0, time
 let netX=0, netY=0;
 const netSpeed=6;
 let keys={};
+let gameoverCursor=0; // 0=retry, 1=title
 
 // Story state
 let currentStoryData=null, storyLineIdx=0, afterStoryFn=null;
@@ -483,6 +510,21 @@ let currentStoryData=null, storyLineIdx=0, afterStoryFn=null;
 // ============================================================
 document.addEventListener('keydown', e=>{
   keys[e.key]=true;
+  // Start screen
+  if(!document.getElementById('start-screen').classList.contains('hidden')){
+    if(e.key===' '||e.key==='Enter'){ e.preventDefault(); startGame(); return; }
+    return;
+  }
+  // Game over screen
+  if(!document.getElementById('gameover-screen').classList.contains('hidden')){
+    if(e.key==='ArrowUp'||e.key==='ArrowDown'){
+      e.preventDefault(); gameoverCursor=gameoverCursor===0?1:0; updateGameoverCursor(); return;
+    }
+    if(e.key===' '||e.key==='Enter'){
+      e.preventDefault(); if(gameoverCursor===0) retryStage(); else resetGame(); return;
+    }
+    return;
+  }
   if(e.key===' '){
     e.preventDefault();
     // Story screen
@@ -496,6 +538,18 @@ document.addEventListener('keydown', e=>{
   }
 });
 document.addEventListener('keyup', e=>{ keys[e.key]=false; });
+function updateGameoverCursor(){
+  const r=document.getElementById('gameover-retry-btn');
+  const t=document.getElementById('gameover-title-btn');
+  if(!r||!t) return;
+  r.classList.toggle('btn-focus',gameoverCursor===0);
+  t.classList.toggle('btn-focus',gameoverCursor===1);
+}
+function showGameOverScreen(text){
+  document.getElementById('gameover-text').textContent=text;
+  document.getElementById('gameover-screen').classList.remove('hidden');
+  gameoverCursor=0; updateGameoverCursor();
+}
 document.getElementById('stage-clear-screen').addEventListener('click', ()=>{
   if(!document.getElementById('stage-clear-screen').classList.contains('hidden')) nextStage();
 });
@@ -557,6 +611,7 @@ function loadStage(){
   clearInterval(timerInterval);
 
   document.getElementById('stage-label').textContent=cfg.name;
+  document.getElementById('hint-box').textContent=cfg.disguised?'👂 耳が長いのを探せ！':'🐰 うさぎを捕まえよう！';
   for(let i=0;i<10;i++){
     const d=document.getElementById(`dot-${i}`);
     if(!d) continue;
@@ -573,14 +628,14 @@ function loadStage(){
       clearInterval(timerInterval);
       stopBGM();
       playGameOver();
-      document.getElementById('gameover-text').textContent=`${cfg.name} でうさぎに逃げられちゃった...`;
-      document.getElementById('gameover-screen').classList.remove('hidden');
+      showGameOverScreen(`${cfg.name} でうさぎに逃げられちゃった...`);
     }
   },1000);
 
   const W=window.innerWidth, H=window.innerHeight, sz=cfg.size;
   const total=cfg.cats+cfg.dogs+1;
   const rabbitIdx=Math.floor(Math.random()*total);
+  const disguisedVariant=Math.floor(Math.random()*CAT_VARIANTS.length);
   let catIdx=0, dogIdx=0;
 
   for(let i=0;i<total;i++){
@@ -591,7 +646,7 @@ function loadStage(){
     else type='dog';
 
     let el;
-    if(cfg.emoji||sz<=28){
+    if(!cfg.disguised&&(cfg.emoji||sz<=28)){
       el=document.createElement('div');
       el.className='animal-emoji';
       const fs=Math.max(10,sz*0.72);
@@ -601,7 +656,7 @@ function loadStage(){
       el=document.createElement('div');
       el.className='animal';
       el.style.cssText=`width:${sz}px;height:${sz}px;`;
-      if(isRabbit) el.innerHTML=makeRabbitSVG();
+      if(isRabbit) el.innerHTML=cfg.disguised?makeDisguisedRabbitSVG(disguisedVariant):makeRabbitSVG();
       else if(type==='cat') el.innerHTML=makeCatSVG(catIdx);
       else el.innerHTML=makeDogSVG(dogIdx);
     }
@@ -753,7 +808,7 @@ function startBoss(){
     const el=document.createElement('div');
     el.className='boss-rabbit-el'; el.style.cssText='width:120px;height:120px;';
     el.innerHTML=makeBossRabbitSVG(); area.appendChild(el);
-    const br={x:W/2-60,y:80,hp:10,dir:1,el,berserk:false,baseSpeed:3,rushTimer:0,rushCooldown:9999,rushDx:0,rushDy:0};
+    const br={x:W/2-60,y:80,hp:10,dir:1,el,berserk:false,baseSpeed:3,rushTimer:0,rushCooldown:9999,rushDx:0,rushDy:0,invincible:false};
     el.style.left=br.x+'px'; el.style.top=br.y+'px';
     bossRabbits.push(br); bossTotalHpMax=10;
   } else {
@@ -767,8 +822,8 @@ function startBoss(){
       area.appendChild(el);
       const br={
         x: W/2-150+i*180, y:80, hp:8,
-        dir: i===0?1:-1, el, berserk:false, baseSpeed:3.8,
-        rushTimer:0, rushCooldown:280+i*120, rushDx:0, rushDy:0
+        dir: i===0?1:-1, el, berserk:false, baseSpeed:5.5,
+        rushTimer:0, rushCooldown:280+i*120, rushDx:0, rushDy:0, invincible:false
       };
       el.style.left=br.x+'px'; el.style.top=br.y+'px';
       bossRabbits.push(br);
@@ -830,8 +885,7 @@ function playerTakeDamage(){
   if(playerCat.hp<=0){
     bossRunning=false; stopBossLoop(); stopBGM(); playGameOver();
     document.getElementById('boss-screen').classList.add('hidden');
-    document.getElementById('gameover-text').textContent='ボスうさぎに負けちゃった...';
-    document.getElementById('gameover-screen').classList.remove('hidden');
+    showGameOverScreen('ボスうさぎに負けちゃった...');
   }
 }
 
@@ -839,9 +893,13 @@ function showCatPaw(bossX, bossY){
   const area=document.getElementById('boss-area');
   const paw=document.createElement('div');
   paw.className='cat-paw-ext'; paw.textContent='🐾';
-  const mx=(playerCat.x+35+bossX)/2-26;
-  const my=(playerCat.y+35+bossY)/2-26;
-  paw.style.left=mx+'px'; paw.style.top=my+'px';
+  const px=playerCat.x+35, py=playerCat.y+35;
+  const dx=bossX-px, dy=bossY-py;
+  const dist=Math.hypot(dx,dy)||1;
+  // Position paw at player edge extending toward boss
+  const pawX=px+(dx/dist)*50-26;
+  const pawY=py+(dy/dist)*50-26;
+  paw.style.left=pawX+'px'; paw.style.top=pawY+'px';
   area.appendChild(paw);
   setTimeout(()=>paw.remove(),500);
 }
@@ -869,8 +927,18 @@ function bossAttack(){
     const br=bossRabbits[i];
     const dx=(playerCat.x+35)-(br.x+60), dy=(playerCat.y+35)-(br.y+60);
     if(Math.hypot(dx,dy)<120){
-      br.hp--; hitAny=true; playPunch();
+      hitAny=true;
+      if(br.invincible){
+        showPopupInArea('⭐ 無敵中！',br.x+60,br.y,'#FFD700');
+        playAngryCat();
+        break;
+      }
+      br.hp--; playPunch();
       showScratch(br.x+60, br.y+60);
+      // Boss invincibility after hit
+      br.invincible=true;
+      br.el.style.opacity='.45';
+      setTimeout(()=>{ br.invincible=false; if(br.el) br.el.style.opacity='1'; },2000);
       const W=window.innerWidth;
       br.x=Math.max(10,Math.min(W-130, br.x+(dx>0?-38:38)));
       br.el.style.left=br.x+'px';
