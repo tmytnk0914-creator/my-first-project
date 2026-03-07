@@ -332,15 +332,15 @@ function makeBossRabbitSVG(){
 // STAGE CONFIG  (stage index 4 = ステージ5 BOSS lv1, index 9 = ステージ10 BOSS lv2)
 // ============================================================
 const STAGES = [
-  { cats:3,   dogs:2,  size:65, speed:1.3, turnChance:.003, time:60, scene:'garden', name:'ステージ 1 - お庭',   emoji:false, disguised:false },
-  { cats:4,   dogs:2,  size:62, speed:1.7, turnChance:.005, time:55, scene:'house',  name:'ステージ 2 - おうち', emoji:false, disguised:false },
-  { cats:8,   dogs:3,  size:56, speed:2.1, turnChance:.007, time:50, scene:'school', name:'ステージ 3 - 学校',   emoji:false, disguised:false },
-  { cats:14,  dogs:4,  size:50, speed:2.6, turnChance:.010, time:44, scene:'park',   name:'ステージ 4 - 公園',   emoji:false, disguised:false },
+  { cats:3,   dogs:2,  size:65, speed:1.3, turnChance:.003, time:45, scene:'garden', name:'ステージ 1 - お庭',   emoji:false, disguised:false },
+  { cats:4,   dogs:2,  size:62, speed:1.7, turnChance:.005, time:40, scene:'house',  name:'ステージ 2 - おうち', emoji:false, disguised:false },
+  { cats:8,   dogs:3,  size:56, speed:2.1, turnChance:.007, time:45, scene:'school', name:'ステージ 3 - 学校',   emoji:false, disguised:false },
+  { cats:14,  dogs:4,  size:50, speed:2.6, turnChance:.010, time:50, scene:'park',   name:'ステージ 4 - 公園',   emoji:false, disguised:false },
   { boss:true, bossLevel:1, scene:'boss', name:'ステージ 5 - ボス戦！' },
-  { cats:25,  dogs:0,  size:44, speed:3.2, turnChance:.013, time:40, scene:'market', name:'ステージ 6 - 商店街', emoji:false, disguised:true  },
-  { cats:50,  dogs:0,  size:35, speed:3.7, turnChance:.016, time:33, scene:'beach',  name:'ステージ 7 - ビーチ', emoji:false, disguised:true  },
-  { cats:90,  dogs:0,  size:28, speed:4.2, turnChance:.020, time:27, scene:'forest', name:'ステージ 8 - 森',     emoji:false, disguised:true  },
-  { cats:200, dogs:0,  size:22, speed:5.0, turnChance:.025, time:22, scene:'space',  name:'ステージ 9 - 宇宙',   emoji:false, disguised:true  },
+  { cats:25,  dogs:0,  size:44, speed:3.2, turnChance:.013, time:50, scene:'market', name:'ステージ 6 - 商店街', emoji:false, disguised:true  },
+  { cats:50,  dogs:0,  size:35, speed:3.7, turnChance:.016, time:45, scene:'beach',  name:'ステージ 7 - ビーチ', emoji:false, disguised:true  },
+  { cats:90,  dogs:0,  size:28, speed:4.2, turnChance:.020, time:40, scene:'forest', name:'ステージ 8 - 森',     emoji:false, disguised:true  },
+  { cats:200, dogs:0,  size:22, speed:5.0, turnChance:.025, time:35, scene:'space',  name:'ステージ 9 - 宇宙',   emoji:false, disguised:true  },
   { boss:true, bossLevel:2, scene:'boss', name:'ステージ 10 - 最終ボス戦！！' },
 ];
 
@@ -545,7 +545,8 @@ function updateGameoverCursor(){
   r.classList.toggle('btn-focus',gameoverCursor===0);
   t.classList.toggle('btn-focus',gameoverCursor===1);
 }
-function showGameOverScreen(text){
+function showGameOverScreen(text, title='⏱️ タイムアップ！'){
+  document.querySelector('.gameover-title').textContent=title;
   document.getElementById('gameover-text').textContent=text;
   document.getElementById('gameover-screen').classList.remove('hidden');
   gameoverCursor=0; updateGameoverCursor();
@@ -885,7 +886,7 @@ function playerTakeDamage(){
   if(playerCat.hp<=0){
     bossRunning=false; stopBossLoop(); stopBGM(); playGameOver();
     document.getElementById('boss-screen').classList.add('hidden');
-    showGameOverScreen('ボスうさぎに負けちゃった...');
+    showGameOverScreen('ボスうさぎに挑んだ！もう一度！', '😿 負けちゃった');
   }
 }
 
