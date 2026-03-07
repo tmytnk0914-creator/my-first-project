@@ -1029,10 +1029,10 @@ function bossLoop(){
   const W=window.innerWidth, H=window.innerHeight;
 
   // Move player
-  if(keys['ArrowLeft']||keys['a'])  playerCat.x=Math.max(0,playerCat.x-5);
-  if(keys['ArrowRight']||keys['d']) playerCat.x=Math.min(W-70,playerCat.x+5);
-  if(keys['ArrowUp']||keys['w'])    playerCat.y=Math.max(60,playerCat.y-5);
-  if(keys['ArrowDown']||keys['s'])  playerCat.y=Math.min(H-70,playerCat.y+5);
+  if(keys['ArrowLeft']||keys['a'])  playerCat.x=Math.max(0,playerCat.x-7.5);
+  if(keys['ArrowRight']||keys['d']) playerCat.x=Math.min(W-70,playerCat.x+7.5);
+  if(keys['ArrowUp']||keys['w'])    playerCat.y=Math.max(60,playerCat.y-7.5);
+  if(keys['ArrowDown']||keys['s'])  playerCat.y=Math.min(H-70,playerCat.y+7.5);
   playerCat.el.style.left=playerCat.x+'px'; playerCat.el.style.top=playerCat.y+'px';
 
   // Move each boss rabbit
