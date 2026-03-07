@@ -21,7 +21,7 @@
     .btn-focus { outline: 4px solid white; transform: translateY(-3px) scale(1.07) !important; box-shadow: 0 8px 28px rgba(0,0,0,.35) !important; }
     #game-screen { position: fixed; inset: 0; z-index: 100; }
     #game-screen.hidden { display: none; }
-    #game-area { width: 100%; height: 100%; position: relative; overflow: hidden; }
+    #game-area { width: 100%; height: 100%; position: relative; overflow: hidden; touch-action: none; }
     #hud { position: fixed; top: 0; left: 0; right: 0; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; z-index: 150; background: rgba(255,255,255,.9); backdrop-filter: blur(14px); box-shadow: 0 2px 16px rgba(255,100,150,.12); flex-wrap: wrap; gap: 6px; }
     #stage-label { font-size: 1.1rem; font-weight: bold; color: #FF5588; }
     #hint-box { font-size: .85rem; color: #FF88AA; background: #FFF0F6; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #FFBBCC; }
@@ -55,7 +55,7 @@
     .gameover-sub { font-size: 1rem; color: #FFAACC; }
     #boss-screen { position: fixed; inset: 0; z-index: 100; }
     #boss-screen.hidden { display: none; }
-    #boss-area { width: 100%; height: 100%; position: relative; overflow: hidden; background: linear-gradient(180deg, #1a0a2e 0%, #2d1b4e 40%, #4a2c6e 100%); }
+    #boss-area { width: 100%; height: 100%; position: relative; overflow: hidden; touch-action: none; background: linear-gradient(180deg, #1a0a2e 0%, #2d1b4e 40%, #4a2c6e 100%); }
     #boss-hud { position: fixed; top: 0; left: 0; right: 0; padding: 10px 18px; z-index: 150; background: rgba(0,0,0,.7); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; }
     .hp-bar-container { width: 200px; height: 20px; background: #333; border-radius: 10px; overflow: hidden; border: 2px solid #666; }
     .hp-bar { height: 100%; border-radius: 8px; transition: width .3s; }
@@ -112,7 +112,8 @@
   <div class="game-subtitle">🐱 猫の中にまぎれたうさぎを捕まえよう！</div>
   <div class="start-desc">
     全10ステージ（ステージ5・10はボス戦！）<br>
-    🕹️ 方向キーで動かして <b>スペース</b> でつかもう！<br>
+    📱 スマホ：指でネットを動かして タップ でつかもう！<br>
+    🕹️ PC：方向キーで動かして <b>スペース</b> でつかもう！<br>
     🖱️ マウスクリックでもOK！<br>
     ⏱️ 制限時間内にうさぎを見つけよう！<br>
     📖 ねことうさぎの物語も楽しんでね！
@@ -137,7 +138,7 @@
   <div class="clear-big" id="stage-clear-text">ステージ 1 クリア！</div>
   <div class="clear-sub" id="clear-time-text">残り時間: 30秒</div>
   <div class="clear-sub">うさぎを捕まえたよ！🐰✨</div>
-  <div class="space-hint">スペース or クリックで次へ ▶</div>
+  <div class="space-hint">タップ / スペース / クリックで次へ ▶</div>
 </div>
 
 <!-- GAME OVER -->
@@ -146,7 +147,7 @@
   <div class="gameover-sub" id="gameover-text">うさぎに逃げられちゃった...</div>
   <button class="btn btn-pink" id="gameover-retry-btn" onclick="retryStage()">🔄 もう一度</button>
   <button class="btn btn-gold" id="gameover-title-btn" onclick="resetGame()">🏠 タイトルへ</button>
-  <div class="space-hint" style="margin-top:2px">↑↓ で選択 / スペース で決定</div>
+  <div class="space-hint" style="margin-top:2px">タップ / ↑↓ で選択・スペース で決定</div>
 </div>
 
 <!-- BOSS SCREEN -->
@@ -182,7 +183,7 @@
     <div class="story-speaker" id="story-speaker"></div>
     <div class="story-text" id="story-text-el"></div>
   </div>
-  <div class="story-hint">スペース or クリックで次へ ▶</div>
+  <div class="story-hint">タップ / スペース / クリックで次へ ▶</div>
 </div>
 
 <!-- ENDING -->
@@ -538,6 +539,57 @@ document.addEventListener('keydown', e=>{
   }
 });
 document.addEventListener('keyup', e=>{ keys[e.key]=false; });
+
+// ---- Touch support ----
+(function(){
+  // Normal game: move net on touch, catch on touchend
+  const gameArea=document.getElementById('game-area');
+  function moveNetToTouch(t){
+    netX=t.clientX-24; netY=t.clientY-24;
+    const net=document.getElementById('net');
+    if(net){ net.style.left=netX+'px'; net.style.top=netY+'px'; }
+  }
+  gameArea.addEventListener('touchstart', e=>{
+    if(!gameRunning||STAGES[currentStage].boss) return;
+    e.preventDefault();
+    moveNetToTouch(e.touches[0]);
+  },{ passive:false });
+  gameArea.addEventListener('touchmove', e=>{
+    if(!gameRunning||STAGES[currentStage].boss) return;
+    e.preventDefault();
+    moveNetToTouch(e.touches[0]);
+  },{ passive:false });
+  gameArea.addEventListener('touchend', e=>{
+    if(!gameRunning||STAGES[currentStage].boss) return;
+    e.preventDefault();
+    tryCatchWithNet();
+  },{ passive:false });
+
+  // Boss game: move playerCat on touch, attack on touchend
+  const bossArea=document.getElementById('boss-area');
+  function moveCatToTouch(t){
+    if(!playerCat.el) return;
+    playerCat.x=Math.max(0,Math.min(window.innerWidth-70,t.clientX-35));
+    playerCat.y=Math.max(60,Math.min(window.innerHeight-70,t.clientY-35));
+    playerCat.el.style.left=playerCat.x+'px';
+    playerCat.el.style.top=playerCat.y+'px';
+  }
+  bossArea.addEventListener('touchstart', e=>{
+    if(!bossRunning) return;
+    e.preventDefault();
+    moveCatToTouch(e.touches[0]);
+  },{ passive:false });
+  bossArea.addEventListener('touchmove', e=>{
+    if(!bossRunning) return;
+    e.preventDefault();
+    moveCatToTouch(e.touches[0]);
+  },{ passive:false });
+  bossArea.addEventListener('touchend', e=>{
+    if(!bossRunning) return;
+    e.preventDefault();
+    bossAttack();
+  },{ passive:false });
+})();
 function updateGameoverCursor(){
   const r=document.getElementById('gameover-retry-btn');
   const t=document.getElementById('gameover-title-btn');
