@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>金沢八景 → 有明ガーデン ユニクロ ルートアニメーション</title>
+<style>
+  :root{
+    --bg:#0f1626; --panel:#162033; --ink:#e8eefc; --sub:#9fb0d0;
+    --car:#ff6b4a; --train:#2dd4bf; --land:#1b2942; --sea:#10203a; --line:#33507f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    background:radial-gradient(1200px 800px at 70% -10%,#1a2640,#0f1626 60%);
+    color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:24px 16px 48px;
+  }
+  h1{font-size:1.25rem;font-weight:800;letter-spacing:.02em;margin-bottom:4px;text-align:center}
+  .sub{color:var(--sub);font-size:.8rem;margin-bottom:18px;text-align:center}
+  .wrap{width:100%;max-width:920px}
+  .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+  button{
+    border:1px solid var(--line);background:var(--panel);color:var(--ink);
+    padding:10px 18px;border-radius:999px;font-size:.9rem;font-weight:700;cursor:pointer;
+    transition:.15s;display:inline-flex;align-items:center;gap:7px;
+  }
+  button:hover{transform:translateY(-1px);border-color:#5b7bb5}
+  button.active.car{background:var(--car);border-color:var(--car);color:#1a0f0a}
+  button.active.train{background:var(--train);border-color:var(--train);color:#06231f}
+  .stage{position:relative;background:var(--panel);border:1px solid #223354;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  svg{display:block;width:100%;height:auto}
+  .hud{
+    position:absolute;top:14px;left:14px;background:rgba(11,18,33,.78);backdrop-filter:blur(6px);
+    border:1px solid #2a3e63;border-radius:14px;padding:12px 16px;min-width:208px;
+  }
+  .hud .mode{font-weight:800;font-size:.95rem;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .stat{display:flex;justify-content:space-between;gap:14px;font-size:.85rem;padding:3px 0}
+  .stat span:first-child{color:var(--sub)}
+  .stat b{font-variant-numeric:tabular-nums;font-weight:800}
+  .leg{position:absolute;bottom:14px;left:14px;right:14px;background:rgba(11,18,33,.72);border:1px solid #2a3e63;border-radius:12px;padding:10px 14px;font-size:.78rem;color:var(--sub);line-height:1.6}
+  .leg b{color:var(--ink)}
+  .progress{height:6px;background:#0c1424;border-radius:6px;overflow:hidden;margin-top:9px}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5b7bb5,#2dd4bf);transition:width .1s linear}
+  .place{font-size:11px;font-weight:700}
+  .place.sm{font-size:10px;font-weight:600}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .card{background:var(--panel);border:1px solid #223354;border-radius:14px;padding:14px 16px}
+  .card h3{font-size:.92rem;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .card .big{font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .card .unit{font-size:.85rem;color:var(--sub);font-weight:600}
+  .card ul{list-style:none;margin-top:8px;font-size:.78rem;color:var(--sub);line-height:1.7}
+  .card li::before{content:"›";color:#5b7bb5;margin-right:6px;font-weight:800}
+  .note{color:#6f82a8;font-size:.72rem;text-align:center;margin-top:14px;line-height:1.6}
+  @media(max-width:640px){.cmp{grid-template-columns:1fr}.hud{min-width:170px;padding:10px 12px}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🚗🚆 金沢八景 → 有明ガーデン「UNIQLO」</h1>
+    <div class="sub">京急 金沢八景駅 から 東京・有明ガーデン店までの道のりアニメーション（数値は目安）</div>
+
+    <div class="controls">
+      <button id="btnCar" class="car active">🚗 車で行く</button>
+      <button id="btnTrain" class="train">🚆 公共交通で行く</button>
+      <button id="btnReplay">↻ 最初から再生</button>
+    </div>
+
+    <div class="stage">
+      <svg viewBox="0 0 920 520" id="map">
+        <!-- 海 -->
+        <rect x="0" y="0" width="920" height="520" fill="var(--sea)"/>
+        <!-- 陸地（模式図） -->
+        <path d="M0,80 Q180,40 360,120 T720,90 Q840,120 920,80 L920,0 L0,0 Z" fill="var(--land)" opacity=".55"/>
+        <path d="M0,520 L0,360 Q160,300 300,360 T620,340 Q800,330 920,400 L920,520 Z" fill="var(--land)" opacity=".7"/>
+        <!-- 東京湾ラベル -->
+        <text x="460" y="270" font-size="16" text-anchor="middle" fill="#34507f" opacity=".8">東 京 湾</text>
+
+        <!-- 車ルート（湾岸線、海沿いカーブ） -->
+        <path id="carPath" fill="none" stroke="var(--car)" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 10" opacity=".85"
+          d="M120,430 C200,380 240,300 360,300 C520,300 560,210 700,190 C760,182 790,170 810,150"/>
+        <!-- 電車ルート（内陸寄り、別ライン） -->
+        <path id="trainPath" fill="none" stroke="var(--train)" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 11" opacity=".85"
+          d="M120,430 C170,360 210,250 330,210 C470,165 540,150 640,140 C720,132 770,150 810,150"/>
+
+        <!-- 駅・地点マーカー -->
+        <g id="stops"></g>
+
+        <!-- 出発・到着 -->
+        <g>
+          <circle cx="120" cy="430" r="9" fill="#fff"/><circle cx="120" cy="430" r="5" fill="#0f1626"/>
+          <text class="place" x="120" y="458" fill="#e8eefc" text-anchor="middle">金沢八景</text>
+        </g>
+        <g>
+          <circle cx="810" cy="150" r="10" fill="#ff3b3b"/><circle cx="810" cy="150" r="4" fill="#fff"/>
+          <text class="place" x="810" y="134" fill="#fff" text-anchor="middle">有明ガーデン</text>
+          <text class="place sm" x="810" y="120" fill="#ffd2c4" text-anchor="middle">UNIQLO</text>
+        </g>
+
+        <!-- 移動マーカー -->
+        <g id="mover">
+          <circle r="15" fill="rgba(255,255,255,.12)"/>
+          <circle r="9" fill="var(--car)" id="moverDot"/>
+          <text id="moverIcon" y="5" font-size="13" text-anchor="middle">🚗</text>
+        </g>
+      </svg>
+
+      <div class="hud">
+        <div class="mode"><span class="dot" id="hudDot" style="background:var(--car)"></span><span id="hudMode">車ルート</span></div>
+        <div class="stat"><span>経過時間</span><b><span id="hudTime">0</span> 分</b></div>
+        <div class="stat"><span>走行距離</span><b><span id="hudDist">0.0</span> km</b></div>
+        <div class="stat"><span>現在地</span><b id="hudSeg" style="font-size:.78rem">出発</b></div>
+        <div class="progress"><i id="bar"></i></div>
+      </div>
+
+      <div class="leg" id="legBox"></div>
+    </div>
+
+    <div class="cmp">
+      <div class="card">
+        <h3><span class="dot" style="background:var(--car)"></span>🚗 車で行く</h3>
+        <div><span class="big">約55</span><span class="unit"> 分</span> ／ <span class="big">約45</span><span class="unit"> km</span></div>
+        <ul>
+          <li>金沢八景 → 幸浦IC（一般道）</li>
+          <li>首都高湾岸線(B) 〜 有明出口</li>
+          <li>渋滞なし時：約45分 / 混雑時：約70分</li>
+          <li>高速料金 目安：約 ¥1,300（ETC）＋ 駐車場</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="dot" style="background:var(--train)"></span>🚆 公共交通で行く</h3>
+        <div><span class="big">約80</span><span class="unit"> 分</span> ／ <span class="big">約50</span><span class="unit"> km</span></div>
+        <ul>
+          <li>京急本線 金沢八景 → 品川（快特 約45分）</li>
+          <li>JR 品川 → 大崎（約5分）</li>
+          <li>りんかい線 大崎 → 国際展示場（約13分）</li>
+          <li>徒歩 約6分 ／ 運賃 目安：約 ¥1,300 ／ 乗換2回</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note">
+      ※ 距離・所要時間・料金は一般的な目安です。実際は時間帯・渋滞・ダイヤ・運賃改定により変動します。<br>
+      正確な経路は Google マップ・Yahoo!路線情報・首都高ルート検索などでご確認ください。
+    </div>
+  </div>
+
+<script>
+const $=id=>document.getElementById(id);
+const carPath=$("carPath"), trainPath=$("trainPath"), mover=$("mover");
+
+// ルート定義：区間ごとの距離(km)・所要(分)・ラベル・進捗位置(0-1)
+const ROUTES={
+  car:{
+    color:getComputedStyle(document.documentElement).getPropertyValue('--car').trim(),
+    icon:"🚗", path:carPath, totalKm:45, totalMin:55, durationSec:9,
+    segs:[
+      {p:0.00,label:"金沢八景 出発"},
+      {p:0.18,label:"幸浦IC から首都高へ"},
+      {p:0.55,label:"首都高湾岸線(B) 走行中"},
+      {p:0.88,label:"有明出口で降りる"},
+      {p:1.00,label:"有明ガーデン 到着"},
+    ]
+  },
+  train:{
+    color:getComputedStyle(document.documentElement).getPropertyValue('--train').trim(),
+    icon:"🚆", path:trainPath, totalKm:50, totalMin:80, durationSec:11,
+    segs:[
+      {p:0.00,label:"京急 金沢八景 乗車"},
+      {p:0.56,label:"品川駅（JRへ乗換）"},
+      {p:0.66,label:"大崎駅（りんかい線へ乗換）"},
+      {p:0.90,label:"国際展示場駅 下車"},
+      {p:1.00,label:"徒歩6分 → 有明ガーデン UNIQLO"},
+    ]
+  }
+};
+
+let mode="car", raf=null, startT=null;
+
+function setMode(m){
+  mode=m;
+  const r=ROUTES[m];
+  $("btnCar").classList.toggle("active",m==="car");
+  $("btnTrain").classList.toggle("active",m==="train");
+  carPath.style.opacity = m==="car"?".95":".18";
+  trainPath.style.opacity = m==="train"?".95":".18";
+  $("moverDot").setAttribute("fill",r.color);
+  $("moverIcon").textContent=r.icon;
+  $("hudDot").style.background=r.color;
+  $("hudMode").textContent = m==="car"?"車ルート":"公共交通ルート";
+  drawStops();
+  play();
+}
+
+function drawStops(){
+  const g=$("stops"); g.innerHTML="";
+  const r=ROUTES[mode], path=r.path, L=path.getTotalLength();
+  r.segs.forEach((s,i)=>{
+    if(i===0||i===r.segs.length-1) return;
+    const pt=path.getPointAtLength(s.p*L);
+    const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("cx",pt.x);c.setAttribute("cy",pt.y);c.setAttribute("r",6);
+    c.setAttribute("fill","#fff");c.setAttribute("stroke",r.color);c.setAttribute("stroke-width","3");
+    g.appendChild(c);
+    const t=document.createElementNS("http://www.w3.org/2000/svg","text");
+    t.setAttribute("x",pt.x);t.setAttribute("y",pt.y-12);t.setAttribute("text-anchor","middle");
+    t.setAttribute("fill","#cfe0ff");t.setAttribute("font-size","10");t.setAttribute("font-weight","700");
+    t.textContent=s.label.split(" ")[0].replace("（","").slice(0,6);
+    g.appendChild(t);
+  });
+}
+
+function segLabel(r,p){
+  let cur=r.segs[0].label;
+  for(const s of r.segs){ if(p>=s.p) cur=s.label; }
+  return cur;
+}
+
+function play(){
+  cancelAnimationFrame(raf); startT=null;
+  const r=ROUTES[mode], path=r.path, L=path.getTotalLength();
+  function frame(ts){
+    if(!startT) startT=ts;
+    let prog=(ts-startT)/(r.durationSec*1000);
+    if(prog>1) prog=1;
+    // イージング
+    const e=prog<.5?2*prog*prog:1-Math.pow(-2*prog+2,2)/2;
+    const pt=path.getPointAtLength(e*L);
+    mover.setAttribute("transform",`translate(${pt.x},${pt.y})`);
+    $("hudTime").textContent=Math.round(e*r.totalMin);
+    $("hudDist").textContent=(e*r.totalKm).toFixed(1);
+    $("hudSeg").textContent=segLabel(r,e);
+    $("bar").style.width=(prog*100)+"%";
+    $("legBox").innerHTML="<b>"+(mode==="car"?"🚗 車":"🚆 公共交通")+"</b>：合計 約"+r.totalMin+"分 / 約"+r.totalKm+"km　—　<b>"+segLabel(r,e)+"</b>";
+    if(prog<1) raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+$("btnCar").onclick=()=>setMode("car");
+$("btnTrain").onclick=()=>setMode("train");
+$("btnReplay").onclick=()=>play();
+setMode("car");
+</script>
+</body>
+</html>
