@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新作ゲーム ローンチ・マーケティング戦略</title>
+<style>
+  :root{
+    --navy:#0F172A; --navy2:#1E293B; --blue:#3B82F6; --cyan:#22D3EE;
+    --text:#E2E8F0; --muted:#94A3B8; --card:#172033; --line:#334155;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+    background:#000;color:var(--text);overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh}
+  .slide{
+    position:absolute;inset:0;display:none;flex-direction:column;
+    padding:6vh 7vw;background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(59,130,246,.18), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(34,211,238,.12), transparent 60%),
+      linear-gradient(160deg,var(--navy),var(--navy2));
+    animation:fade .4s ease;
+  }
+  .slide.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .kicker{color:var(--cyan);font-weight:700;letter-spacing:.12em;font-size:1rem;text-transform:uppercase;margin-bottom:1.2vh}
+  h1{font-size:3.4rem;font-weight:800;line-height:1.15;letter-spacing:-.01em}
+  h2{font-size:2.5rem;font-weight:800;line-height:1.2;margin-bottom:2.5vh}
+  .sub{color:var(--muted);font-size:1.4rem;margin-top:2vh;font-weight:500}
+  ul{list-style:none;display:flex;flex-direction:column;gap:1.6vh;margin-top:1vh}
+  li{font-size:1.5rem;line-height:1.5;padding-left:2.2rem;position:relative}
+  li::before{content:"";position:absolute;left:0;top:.7em;width:.7rem;height:.7rem;border-radius:2px;
+    background:linear-gradient(135deg,var(--blue),var(--cyan))}
+  li b{color:#fff}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6vw;margin-top:1vh;flex:1;align-content:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:2.4vh 1.8vw}
+  .card h3{color:var(--cyan);font-size:1.35rem;margin-bottom:1vh}
+  .card p{color:var(--muted);font-size:1.1rem;line-height:1.5}
+  .big{font-size:6rem;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--cyan));
+    -webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:3vw;flex:1;align-items:center}
+  .note{margin-top:auto;color:var(--muted);font-size:.95rem;border-left:3px solid var(--blue);padding-left:1rem}
+  .timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5vw;margin-top:2vh}
+  .phase{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:2.2vh 1.4vw;position:relative}
+  .phase .tag{display:inline-block;background:rgba(59,130,246,.2);color:var(--cyan);font-weight:700;
+    font-size:.85rem;padding:.3rem .7rem;border-radius:999px;margin-bottom:1.2vh}
+  .center{justify-content:center;align-items:center;text-align:center}
+  .matrix{display:grid;grid-template-columns:1fr 1fr;gap:1vw;margin-top:2vh;flex:1}
+  .quad{border:1px solid var(--line);border-radius:12px;padding:2vh 1.4vw;background:var(--card)}
+  .quad h4{font-size:1.1rem;margin-bottom:.6vh}
+  .quad.hi{border-color:var(--blue);box-shadow:0 0 0 1px rgba(59,130,246,.3) inset}
+  table{width:100%;border-collapse:collapse;margin-top:2vh;font-size:1.15rem}
+  th,td{text-align:left;padding:1.4vh 1vw;border-bottom:1px solid var(--line)}
+  th{color:var(--cyan)}
+  .hud{position:fixed;bottom:2.5vh;right:3vw;color:var(--muted);font-size:.95rem;z-index:10}
+  .hud b{color:#fff}
+  .bar{position:fixed;bottom:0;left:0;height:4px;background:linear-gradient(90deg,var(--blue),var(--cyan));z-index:10;transition:width .3s}
+  .hint{position:fixed;bottom:2.5vh;left:3vw;color:var(--muted);font-size:.85rem;z-index:10}
+  @media print{
+    body{overflow:visible}
+    .slide{display:flex!important;position:relative;height:100vh;page-break-after:always;animation:none}
+    .hud,.bar,.hint{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide center">
+    <div class="kicker">Game Marketing Strategy</div>
+    <h1>新作ゲーム<br>ローンチ・マーケティング戦略</h1>
+    <p class="sub">コミュニティ起点 × データドリブンで、混雑市場を勝ち抜く</p>
+    <p class="sub" style="font-size:1.1rem;margin-top:5vh">マーケティングチーム / 2026</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="kicker">Hook ・ 市場の現状</div>
+    <h2>今、ゲーム市場で起きていること</h2>
+    <div class="two">
+      <div><div class="big">90%+</div><p class="sub">の新作が初週で埋もれ、認知を獲得できない</p></div>
+      <ul>
+        <li>年間リリース数は過去5年で<b>約2倍</b>に増加</li>
+        <li>ユーザーの可処分時間とウィッシュリストは<b>飽和状態</b></li>
+        <li><b>「作れば売れる」時代は終わった</b></li>
+      </ul>
+    </div>
+    <p class="note">危機感を共有し、聴衆を引き込む。</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="kicker">Problem ・ 課題</div>
+    <h2>私たちが直面する課題</h2>
+    <ul>
+      <li>開発品質は高いが、<b>発売前の認知がほぼゼロ</b></li>
+      <li>広告に頼った獲得は、<b>CAC（獲得コスト）が高騰</b>し続けている</li>
+      <li>発売後のスタートダッシュ依存は<b>リスクが大きい</b></li>
+    </ul>
+    <p class="note">「良いゲーム＝売れる」ではない構造を明示する。</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="kicker">Insight ・ 洞察</div>
+    <h2>データが示す本質的な洞察</h2>
+    <div class="two">
+      <ul>
+        <li>成功タイトルの共通点は<b>発売“前”のコミュニティ規模</b></li>
+        <li>ウィッシュリスト登録数と初週売上に<b>強い相関</b></li>
+        <li>勝負は発売日ではなく、<b>発売6か月前</b>から始まる</li>
+      </ul>
+      <div class="card center"><div class="big" style="font-size:4rem">前 → 後</div>
+      <p class="sub" style="font-size:1.2rem">視点を「発売日」から「育成期間」へ転換</p></div>
+    </div>
+    <p class="note">聴衆の視点を転換させる、最重要スライド。</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <div class="kicker">Solution ・ 全体像</div>
+    <h2>マーケティング戦略の全体像</h2>
+    <div class="grid">
+      <div class="card"><h3>① コミュニティ育成</h3><p>発売前からファンを育て、自然拡散の土台をつくる。</p></div>
+      <div class="card"><h3>② データドリブン獲得</h3><p>指標を週次で回し、CACを継続的に最適化する。</p></div>
+      <div class="card"><h3>③ 持続的エンゲージメント</h3><p>発売後も関係を維持し、LTVを最大化する。</p></div>
+    </div>
+    <p class="note">一貫したブランドメッセージで全フェーズを貫く。</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <div class="kicker">Solution ・ 詳細1</div>
+    <h2>ターゲット & ポジショニング</h2>
+    <ul>
+      <li>主要ターゲット: <b>コアゲーマー（18〜34歳）</b>＋ 配信視聴層</li>
+      <li>ポジショニング: <b>「ジャンル × 独自メカニクス」</b>で差別化</li>
+      <li>競合マップ上の<b>空白地帯</b>を狙う</li>
+      <li>一言で言える<b>バリュープロポジション</b>を定義</li>
+    </ul>
+    <p class="note">「誰に・なぜ刺さるか」をペルソナとマップで語る。</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide">
+    <div class="kicker">Solution ・ 詳細2</div>
+    <h2>チャネル & コンテンツ戦略</h2>
+    <div class="grid">
+      <div class="card"><h3>Earned（拡散）</h3><p>配信者シーディング、Discordコミュニティ運営。</p></div>
+      <div class="card"><h3>Owned（資産）</h3><p>ストアページ最適化、開発ブログ、SNS。</p></div>
+      <div class="card"><h3>Paid（刈り取り）</h3><p>リターゲティング中心の効率的広告運用。</p></div>
+    </div>
+    <ul style="margin-top:2vh"><li>コンテンツ設計: <b>開発舞台裏 → デモ → トレーラー</b>の段階展開</li></ul>
+    <p class="note">「無料で広がる仕組み」を先に作り、広告は後半に集中。</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <div class="kicker">Solution ・ 詳細3</div>
+    <h2>ローンチ・タイムライン</h2>
+    <div class="timeline">
+      <div class="phase"><span class="tag">Phase 1 ・ 6〜3か月前</span><p class="sub" style="font-size:1.15rem">認知 & ウィッシュリスト獲得</p></div>
+      <div class="phase"><span class="tag">Phase 2 ・ 3〜0か月前</span><p class="sub" style="font-size:1.15rem">デモ配信 & 予約促進</p></div>
+      <div class="phase"><span class="tag">Phase 3 ・ 発売〜3か月後</span><p class="sub" style="font-size:1.15rem">ローンチ施策 & レビュー & 継続運用</p></div>
+    </div>
+    <p class="note">各フェーズにマイルストーンと担当を明記する。</p>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <div class="kicker">Proof ・ KPI</div>
+    <h2>KPIと測定フレームワーク</h2>
+    <table>
+      <tr><th>区分</th><th>指標</th></tr>
+      <tr><td>先行指標</td><td>ウィッシュリスト数 / コミュニティ規模 / デモDL数</td></tr>
+      <tr><td>結果指標</td><td>初週売上 / CAC / ROAS / リテンション</td></tr>
+      <tr><td>運用</td><td>週次ダッシュボードでPDCAを高速回転</td></tr>
+    </table>
+    <p class="note">「何をもって成功とするか」を数値で合意する。</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <div class="kicker">Proof ・ 予算</div>
+    <h2>予算とリソース配分</h2>
+    <ul>
+      <li>費目別配分: <b>コミュニティ / コンテンツ / ペイド / ツール</b></li>
+      <li>投資カーブ: <b>前半は育成、後半は刈り取り</b></li>
+      <li>ROIシミュレーション: <b>投資 → 想定売上</b>をレンジで提示</li>
+    </ul>
+    <p class="note">円グラフ＋シナリオ別ROIで投資判断を後押しする。</p>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide">
+    <div class="kicker">補強 ・ Risk</div>
+    <h2>リスクと対応策</h2>
+    <div class="matrix">
+      <div class="quad hi"><h4>発売延期</h4><p class="sub" style="font-size:1.05rem">→ スケジュールにバッファを設計</p></div>
+      <div class="quad hi"><h4>競合の同時期ローンチ</h4><p class="sub" style="font-size:1.05rem">→ 差別化メッセージを徹底</p></div>
+      <div class="quad"><h4>炎上リスク</h4><p class="sub" style="font-size:1.05rem">→ 危機対応フローを事前整備</p></div>
+      <div class="quad"><h4>認知不足</h4><p class="sub" style="font-size:1.05rem">→ 早期コミュニティ施策で先回り</p></div>
+    </div>
+    <p class="note">リスクを先回りで示し、戦略の信頼性を高める。</p>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide">
+    <div class="kicker">Conclusion ・ Next Action</div>
+    <h2>ネクストアクション</h2>
+    <ul>
+      <li>本日の決定事項: <b>戦略承認 / 予算承認 / キックオフ日</b></li>
+      <li>直近30日のアクション（<b>担当・期日つき</b>）</li>
+      <li>次回レビューのタイミングを設定</li>
+    </ul>
+    <p class="note">明確なCTAで会議を「決定」で締める。</p>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide center">
+    <div class="kicker">Q & A</div>
+    <h1>ご質問・ご意見を<br>お願いします</h1>
+    <p class="sub">補足資料・詳細データは付録をご参照ください</p>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide">
+    <div class="kicker">Appendix ・ 付録</div>
+    <h2>付録</h2>
+    <ul>
+      <li>詳細データ / 競合分析 / 用語集</li>
+      <li>過去タイトルのベンチマーク</li>
+      <li>質疑応答時の根拠資料</li>
+    </ul>
+  </section>
+
+</div>
+
+<div class="bar" id="bar"></div>
+<div class="hud" id="hud"></div>
+<div class="hint">← → / Space で移動 ・ F で全画面 ・ 印刷でPDF化</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    document.getElementById('hud').innerHTML=`<b>${i+1}</b> / ${slides.length}`;
+    document.getElementById('bar').style.width=((i+1)/slides.length*100)+'%';
+    location.hash=i+1;
+  }
+  function next(){show(i+1)} function prev(){show(i-1)}
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();next()}
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();prev()}
+    if(e.key==='Home')show(0); if(e.key==='End')show(slides.length-1);
+    if(e.key.toLowerCase()==='f'){document.documentElement.requestFullscreen?.()}
+  });
+  document.getElementById('deck').addEventListener('click',e=>{
+    if(e.clientX < window.innerWidth*0.25) prev(); else next();
+  });
+  show(parseInt(location.hash.replace('#',''))-1 || 0);
+</script>
+</body>
+</html>
