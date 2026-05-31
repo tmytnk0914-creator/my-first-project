@@ -3,52 +3,72 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>リフォーム後 3Dパース（操作可能）</title>
+<title>リフォーム後 3Dパース（色切替対応）</title>
 <style>
-  :root { --bg:#1b1f24; --panel:rgba(28,33,40,.92); --txt:#e8edf2; --accent:#5db0ff; }
+  :root { --bg:#1b1f24; --panel:rgba(28,33,40,.93); --txt:#e8edf2; --accent:#5db0ff; }
   * { box-sizing:border-box; }
   html,body { margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--txt);
               font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif; }
   #app { position:fixed; inset:0; }
-  #ui { position:fixed; top:12px; left:12px; z-index:10; background:var(--panel);
-        border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:14px 16px; max-width:300px;
-        backdrop-filter:blur(8px); box-shadow:0 8px 30px rgba(0,0,0,.45); }
-  #ui h1 { font-size:15px; margin:0 0 6px; letter-spacing:.3px; }
+  .card { background:var(--panel); border:1px solid rgba(255,255,255,.1); border-radius:12px;
+          backdrop-filter:blur(8px); box-shadow:0 8px 30px rgba(0,0,0,.45); }
+  #ui { position:fixed; top:12px; left:12px; z-index:10; padding:14px 16px; max-width:280px; }
+  #ui h1 { font-size:15px; margin:0 0 6px; }
   #ui p  { font-size:12px; line-height:1.5; margin:0 0 10px; color:#aeb8c2; }
   .row { display:flex; align-items:center; gap:8px; margin:7px 0; font-size:13px; }
   .row label { flex:1; }
-  input[type=range]{ width:110px; accent-color:var(--accent); }
+  input[type=range]{ width:104px; accent-color:var(--accent); }
   button { background:#2b3340; color:var(--txt); border:1px solid rgba(255,255,255,.14);
            border-radius:8px; padding:6px 10px; font-size:12px; cursor:pointer; }
   button:hover { background:#36404f; }
   button.on { background:var(--accent); color:#06223d; border-color:var(--accent); }
-  #legend { position:fixed; bottom:12px; left:12px; z-index:10; background:var(--panel);
-            border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:10px 14px; font-size:11px;
-            max-width:320px; color:#cdd6df; }
-  #legend b{ color:#fff; }
+
+  #finish { position:fixed; top:12px; right:12px; z-index:10; padding:12px 14px; width:260px;
+            max-height:calc(100vh - 24px); overflow:auto; }
+  #finish h2 { font-size:14px; margin:2px 0 8px; }
+  #finish .grp { margin:0 0 12px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.08); }
+  #finish .grp:last-child { border-bottom:none; }
+  #finish .gt { font-size:12px; font-weight:bold; color:var(--accent); margin:0 0 6px; }
+  #finish .fl { font-size:11px; color:#aeb8c2; margin:8px 0 2px; }
+  #finish .selwrap { display:flex; align-items:center; gap:7px; }
+  #finish .sw { width:18px; height:18px; border-radius:4px; border:1px solid rgba(255,255,255,.35); flex:none; }
+  #finish select { flex:1; background:#222a34; color:var(--txt); border:1px solid rgba(255,255,255,.16);
+                   border-radius:7px; padding:5px 6px; font-size:12px; max-width:100%; }
+  #finish .note { font-size:10px; color:#7e8893; margin-top:4px; line-height:1.4; }
+  #legend { position:fixed; bottom:12px; left:12px; z-index:10; padding:9px 13px; font-size:11px;
+            max-width:300px; color:#cdd6df; } #legend b{ color:#fff; }
   #hint { position:fixed; bottom:12px; right:12px; z-index:10; font-size:11px; color:#8b97a3;
-          background:var(--panel); padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.08); }
+          padding:7px 11px; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 
-<div id="ui">
+<div id="ui" class="card">
   <h1>🏠 リフォーム後 3Dパース</h1>
-  <p>図面の内寸（幅6950mm 他）をもとに作成した立体モデルです。ドラッグで回転 / ホイールで拡大 / 右ドラッグで移動。</p>
-  <div class="row"><label>壁の高さ</label><button id="btnWalls" class="on">表示</button></div>
+  <p>左ドラッグ=回転 / ホイール=ズーム / 右ドラッグ=移動。右パネルで色を選ぶと3Dが切り替わります。</p>
   <div class="row"><label>壁の透明度</label><input id="opacity" type="range" min="0" max="100" value="100"></div>
   <div class="row"><label>家具</label><button id="btnFurniture" class="on">表示</button></div>
   <div class="row"><label>部屋名ラベル</label><button id="btnLabels" class="on">表示</button></div>
-  <div class="row"><label>真上から見る</label><button id="btnTop">切替</button></div>
+  <div class="row">
+    <button id="btnTop">真上から</button>
+    <button id="goKitchen">キッチンへ</button>
+    <button id="goBath">浴室へ</button>
+  </div>
 </div>
 
-<div id="legend">
-  <b>このモデルについて</b><br>
-  図面（マンション間取り図）から読み取った寸法・帖数で再現しています。中央〜北側の細部は概算です。<br>
-  正確な寸法・追加情報をいただければ調整します。
+<div id="finish" class="card">
+  <h2>🎨 仕上げ材を選ぶ</h2>
+  <div class="grp" id="grpBath"></div>
+  <div class="grp" id="grpKitchen"></div>
 </div>
-<div id="hint">操作：左ドラッグ=回転 / ホイール=ズーム / 右ドラッグ=平行移動</div>
+
+<div id="legend" class="card">
+  <b>このモデルについて</b><br>
+  図面の内寸＋ご指定の機種・色（バニティ1200/プレアスLS/グランスパ1418/トレーシアII列型）を反映。
+  中央〜北側の間取り細部と、色見本のRGBは近似値です。
+</div>
+<div id="hint" class="card">操作：左ドラッグ=回転 / ホイール=ズーム / 右ドラッグ=平行移動</div>
 
 <script type="importmap">
 { "imports": {
@@ -62,14 +82,11 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // ===================================================================
-//  寸法設定（単位：メートル）— 図面の内寸を反映。修正はここを編集。
-//  座標系： x = 東西（0:西 → 東）, z = 南北（0:南バルコニー側 → 北）, y = 上
+//  寸法設定（単位：メートル）座標 x=東西(0西→東) z=南北(0南→北) y=上
 // ===================================================================
-const ENV = { W: 6.95, D: 11.4, CH: 2.42 };   // 内寸 幅 / 奥行 / 標準天井高
-const WALL_T = 0.12;                            // 壁厚
-const BAL = 1.4;                                // バルコニー奥行
+const ENV = { W: 6.95, D: 11.4, CH: 2.42 };
+const WALL_T = 0.12, BAL = 1.4;
 
-// --- 部屋（床ゾーン）。x,z は南西角、w=幅(東西)、d=奥行(南北) ---
 const ROOMS = [
   { name:'リビング',   x:0.00, z:0.00, w:3.55, d:4.30, color:0xd8c3a5, ch:2.42 },
   { name:'ダイニング', x:3.55, z:0.00, w:1.15, d:2.40, color:0xddc9ad, ch:2.42 },
@@ -77,79 +94,99 @@ const ROOMS = [
   { name:'主寝室',     x:0.00, z:4.42, w:3.40, d:3.60, color:0xc9b79c, ch:2.31 },
   { name:'WIC',        x:0.00, z:8.02, w:1.70, d:1.40, color:0xb7a98f, ch:2.31 },
   { name:'廊下',       x:3.52, z:2.52, w:1.05, d:6.90, color:0xc3c8cd, ch:2.06 },
-  { name:'洗面脱衣室', x:4.70, z:4.42, w:1.10, d:1.90, color:0xb9c6cc, ch:2.20 },
-  { name:'UB(浴室)',   x:5.55, z:6.32, w:1.40, d:1.80, color:0xa9c4cf, ch:2.10 },
+  { name:'洗面脱衣室', x:4.70, z:4.42, w:1.30, d:1.90, color:0xb9c6cc, ch:2.20 },
+  { name:'UB(浴室)',   x:5.55, z:6.32, w:1.40, d:1.80, color:0xc9ccce, ch:2.10 },
   { name:'トイレ',     x:4.70, z:6.32, w:0.85, d:1.30, color:0xc1cdd2, ch:2.10 },
   { name:'玄関',       x:2.40, z:9.30, w:1.20, d:2.10, color:0x9aa4ad, ch:2.06 },
   { name:'洋室①',     x:0.00, z:9.00, w:2.30, d:2.40, color:0xd0bfa3, ch:2.42 },
   { name:'洋室②',     x:4.30, z:8.40, w:2.65, d:3.00, color:0xd0bfa3, ch:2.42 },
 ];
 
-// --- 壁セグメント。{x1,z1,x2,z2, h, openings:[{at,width,sill,top}]} ---
-//  at = 始点からの開口中心位置(m), sill=下端, top=上端 (床=0基準)
 const WALLS = [
-  // 外周
-  { x1:0, z1:0, x2:ENV.W, z2:0, h:ENV.CH, openings:[{at:1.7,width:2.6,sill:0.0,top:2.2},{at:5.6,width:1.6,sill:0.0,top:2.2}] }, // 南（LDKバルコニー窓）
-  { x1:0, z1:ENV.D, x2:ENV.W, z2:ENV.D, h:ENV.CH, openings:[{at:1.1,width:1.7,sill:0.0,top:2.2},{at:5.5,width:1.7,sill:0.0,top:2.2}] }, // 北（洋室バルコニー窓）
-  { x1:0, z1:0, x2:0, z2:ENV.D, h:ENV.CH, openings:[] },        // 西
-  { x1:ENV.W, z1:0, x2:ENV.W, z2:ENV.D, h:ENV.CH, openings:[{at:10.4,width:1.0,sill:0.0,top:2.06}] }, // 東（玄関ドア付近）
-
-  // LDKと中央ゾーンの間仕切り(z=4.42)
-  { x1:0, z1:4.42, x2:3.40, z2:4.42, h:2.42, openings:[{at:2.6,width:0.9,sill:0,top:2.0}] }, // 主寝室入口ドア
-  { x1:4.57, z1:4.42, x2:ENV.W, z2:4.42, h:2.42, openings:[] },                              // 洗面側
-  // 主寝室 東壁（廊下と仕切る）
+  { x1:0, z1:0, x2:ENV.W, z2:0, h:ENV.CH, openings:[{at:1.7,width:2.6,sill:0,top:2.2},{at:5.6,width:1.6,sill:0,top:2.2}] },
+  { x1:0, z1:ENV.D, x2:ENV.W, z2:ENV.D, h:ENV.CH, openings:[{at:1.1,width:1.7,sill:0,top:2.2},{at:5.5,width:1.7,sill:0,top:2.2}] },
+  { x1:0, z1:0, x2:0, z2:ENV.D, h:ENV.CH, openings:[] },
+  { x1:ENV.W, z1:0, x2:ENV.W, z2:ENV.D, h:ENV.CH, openings:[{at:10.4,width:1.0,sill:0,top:2.06}] },
+  { x1:0, z1:4.42, x2:3.40, z2:4.42, h:2.42, openings:[{at:2.6,width:0.9,sill:0,top:2.0}] },
+  { x1:4.57, z1:4.42, x2:ENV.W, z2:4.42, h:2.42, openings:[] },
   { x1:3.40, z1:4.42, x2:3.40, z2:8.02, h:2.31, openings:[] },
-  // WIC 仕切り
   { x1:1.70, z1:8.02, x2:1.70, z2:9.42, h:2.31, openings:[{at:0.7,width:0.8,sill:0,top:2.0}] },
   { x1:0, z1:8.02, x2:1.70, z2:8.02, h:2.31, openings:[] },
-  // 廊下 東壁（水回りと仕切る）
   { x1:4.57, z1:4.42, x2:4.57, z2:9.30, h:2.06, openings:[{at:1.0,width:0.7,sill:0,top:2.0},{at:2.6,width:0.7,sill:0,top:2.0}] },
-  // 水回り内仕切り
-  { x1:4.57, z1:6.32, x2:ENV.W, z2:6.32, h:2.10, openings:[] }, // トイレ/UBと洗面の境
-  { x1:5.55, z1:6.32, x2:5.55, z2:8.12, h:2.10, openings:[] },  // UB西壁
-  { x1:4.57, z1:8.12, x2:ENV.W, z2:8.12, h:2.10, openings:[] }, // UB北壁
-  // 玄関まわり
-  { x1:2.40, z1:9.30, x2:2.40, z2:ENV.D, h:2.06, openings:[{at:1.0,width:0.8,sill:0,top:2.0}] }, // 玄関西
-  { x1:3.60, z1:9.30, x2:3.60, z2:ENV.D, h:2.06, openings:[] }, // 玄関東
-  { x1:2.40, z1:9.30, x2:3.60, z2:9.30, h:2.06, openings:[{at:0.6,width:0.8,sill:0,top:2.0}] }, // 玄関と廊下
-  // 洋室①東壁 / 洋室②西壁・南壁
+  { x1:4.57, z1:6.32, x2:ENV.W, z2:6.32, h:2.10, openings:[] },
+  { x1:5.55, z1:6.32, x2:5.55, z2:8.12, h:2.10, openings:[] },
+  { x1:4.57, z1:8.12, x2:ENV.W, z2:8.12, h:2.10, openings:[] },
+  { x1:2.40, z1:9.30, x2:2.40, z2:ENV.D, h:2.06, openings:[{at:1.0,width:0.8,sill:0,top:2.0}] },
+  { x1:3.60, z1:9.30, x2:3.60, z2:ENV.D, h:2.06, openings:[] },
+  { x1:2.40, z1:9.30, x2:3.60, z2:9.30, h:2.06, openings:[{at:0.6,width:0.8,sill:0,top:2.0}] },
   { x1:2.30, z1:9.00, x2:2.30, z2:ENV.D, h:2.42, openings:[{at:1.6,width:0.8,sill:0,top:2.0}] },
   { x1:0, z1:9.00, x2:2.30, z2:9.00, h:2.42, openings:[] },
   { x1:4.30, z1:8.40, x2:4.30, z2:ENV.D, h:2.42, openings:[{at:0.6,width:0.8,sill:0,top:2.0}] },
   { x1:4.30, z1:8.40, x2:ENV.W, z2:8.40, h:2.42, openings:[] },
 ];
 
-// --- 家具・設備。box: 中心(x,z), 幅w(東西), 奥d(南北), 高h, 色 ---
+// 一般家具（キッチン・水回りの詳細は別途生成）
 const FURNITURE = [
-  // リビング
-  { name:'ソファ',     x:1.0,  z:3.6,  w:2.1, d:0.9, h:0.75, color:0x6b7b8c },
-  { name:'TVボード',   x:0.30, z:1.5,  w:0.45,d:1.4, h:0.45, color:0x3a3f45 },
-  { name:'ローテーブル',x:1.0, z:2.4,  w:1.1, d:0.55,h:0.40, color:0x8a6f52 },
-  // ダイニング
-  { name:'ダイニングT',x:3.95, z:1.4,  w:0.85,d:1.5, h:0.72, color:0x9c7b54 },
-  // キッチン
-  { name:'キッチン',   x:5.0,  z:0.55, w:2.4, d:0.65,h:0.85, color:0xeceff1 },
-  { name:'冷蔵庫',     x:6.5,  z:0.45, w:0.7, d:0.7, h:1.8,  color:0xc9ccd0 },
-  { name:'食器棚',     x:6.5,  z:1.7,  w:0.6, d:0.55,h:1.9,  color:0xb7a98f },
-  // 主寝室
-  { name:'ベッド(D)',  x:1.5,  z:6.6,  w:1.4, d:2.0, h:0.5,  color:0x8694a3 },
-  { name:'デスク',     x:0.45, z:4.9,  w:0.6, d:1.0, h:0.72, color:0x9c7b54 },
-  // 洋室①
-  { name:'ベッド',     x:0.7,  z:10.3, w:1.02,d:2.05,h:0.5,  color:0x8694a3 },
-  // 洋室②
-  { name:'ベッド',     x:4.9,  z:10.2, w:1.02,d:2.05,h:0.5,  color:0x8694a3 },
-  { name:'デスク',     x:6.4,  z:9.0,  w:0.55,d:1.0, h:0.72, color:0x9c7b54 },
-  // 水回り
-  { name:'浴槽',       x:6.55, z:7.4,  w:0.75,d:1.6, h:0.55, color:0xdfeef2 },
-  { name:'洗面化粧台', x:4.95, z:4.7,  w:0.75,d:0.5, h:0.85, color:0xe6ebee },
-  { name:'洗濯機',     x:5.55, z:4.7,  w:0.6, d:0.6, h:1.0,  color:0xdfe3e6 },
-  { name:'便器',       x:5.0,  z:6.9,  w:0.4, d:0.7, h:0.7,  color:0xf0f3f5 },
-  // 玄関
-  { name:'シューズBOX',x:3.45, z:11.0, w:0.30,d:1.2, h:1.9,  color:0xb7a98f },
+  { x:1.0,  z:3.6,  w:2.1, d:0.9, h:0.75, color:0x6b7b8c }, // ソファ
+  { x:0.30, z:1.5,  w:0.45,d:1.4, h:0.45, color:0x3a3f45 }, // TVボード
+  { x:1.0,  z:2.4,  w:1.1, d:0.55,h:0.40, color:0x8a6f52 }, // ローテーブル
+  { x:3.95, z:1.4,  w:0.85,d:1.5, h:0.72, color:0x9c7b54 }, // ダイニングT
+  { x:6.5,  z:0.45, w:0.7, d:0.7, h:1.8,  color:0xc9ccd0 }, // 冷蔵庫
+  { x:6.5,  z:2.0,  w:0.55,d:0.4, h:1.9,  color:0xb7a98f }, // 食器棚
+  { x:1.5,  z:6.6,  w:1.4, d:2.0, h:0.5,  color:0x8694a3 }, // 主寝室ベッド
+  { x:0.45, z:4.9,  w:0.6, d:1.0, h:0.72, color:0x9c7b54 }, // デスク
+  { x:0.7,  z:10.3, w:1.02,d:2.05,h:0.5,  color:0x8694a3 }, // 洋室①ベッド
+  { x:4.9,  z:10.2, w:1.02,d:2.05,h:0.5,  color:0x8694a3 }, // 洋室②ベッド
+  { x:6.4,  z:9.0,  w:0.55,d:1.0, h:0.72, color:0x9c7b54 }, // 洋室②デスク
+  { x:5.55, z:5.5,  w:0.6, d:0.6, h:1.0,  color:0xdfe3e6 }, // 洗濯機
+  { x:3.45, z:11.0, w:0.30,d:1.2, h:1.9,  color:0xb7a98f }, // シューズBOX
 ];
 
 // ===================================================================
-//  3D 構築
+//  カラーパレット（色名 → RGB近似値）
+// ===================================================================
+const PAL = {
+  bathAccent: [
+    ['フロウストーングレー',0xb6b1aa],['ウォルナットホワイト',0xddd2c2],['ウォルナットダーク',0x6e5440],
+    ['ストーングレー',0x9a9893],['ベージュ',0xcfc2ab],['ホワイト',0xf1efe9],['ネイビー',0x33415a],['グリーン',0x5f6f5c],
+  ],
+  bathFloor: [
+    ['チェッポビアンコ',0xddd9cf],['ピエトラグレージュ',0xb3a994],['サンディグレー',0xa8a49b],
+    ['カームホワイト',0xdddad2],['カームベージュ',0xc8bca6],['カームグレー',0xb0ada6],['カームダークグレー',0x6f6e6b],
+    ['ホワイトグレー(FRP)',0xdcdcd8],['グレーベージュ(FRP)',0xc8bdac],['グレー(FRP)',0xb6b6b2],
+  ],
+  bathTub: [
+    ['クリスタルパールホワイト',0xf0efe9],['シュガーライトグレー',0xd9d8d2],['シュガーライトベージュ',0xddd3c0],
+    ['シュガーブラック',0x2c2b2c],['ホワイト(FRP)',0xf2f1ec],['ベージュ(FRP)',0xe4dccb],['ライトグレー(FRP)',0xd6d6d2],
+  ],
+  kitDoor: [
+    ['スタッコグレー',0xb8b2a8],['ホワイトアッシュ',0xe3ded3],['グレージュアッシュ',0xcbbfa8],['ウォルナットホワイト',0xd8cdbd],
+    ['ウォルナットグレージュ',0xb9a890],['チェスナットミディアム',0x6b4a32],['フロウストーングレー',0xb6b1aa],
+    ['フロウストーンテラコッタ',0xc9a98f],['マットベージュ',0xb6ab98],['マットホワイトグレー',0xd7d4cc],
+    ['マットグレー',0x8a8a88],['マットブラック',0x2b2b2b],['マットアッシュグリーン',0x6f7563],
+    ['ホワイト',0xf1efe9],['フローラルアイボリー',0xe9e0cf],['ライトグレー',0xcfd0cf],['ベージュ',0xcdbda6],['ブルーグリーン',0x1f4a4a],
+  ],
+  kitPanel: [
+    ['エルムホワイト',0xe6ded0],['エルムナチュラル',0xcbb392],['ブラウンアッシュ',0x7d5a44],['アウリジーナタイル',0xe3d6c4],
+    ['チェッポストーンライト',0xcfc8ba],['チェッポストーンダーク',0x6e6a64],['スウェディッシュベージュ',0xd8cab2],
+    ['スウェディッシュグレー',0xc2bcb2],['ルナダークグレー',0x5f5d5a],['トラバーチンホワイト',0xe0d8c8],
+    ['ドラマチックホワイト',0xece7df],['コンクリートライト',0xcfccc6],['コンクリートダーク',0x6f6e6c],
+    ['スノーモザイク',0xe8e8e6],['ミルキーモザイク',0xece6da],['ビアンコテラゾー',0xded9cf],
+    ['ジオライングリーン',0x7e8a72],['ジオラインピンク',0xd9c2bf],
+    ['ウッドマイル',0xc9ad86],['ストーンホワイト',0xe2dccf],['パールホワイト',0xecebe6],['ホワイト',0xf2f1ec],
+    ['マーブルグレー',0xcfcdc8],['マーブル',0xe6e3dc],
+  ],
+  kitTop: [
+    ['ホワイトクレイ',0xe8e4da],['ブランソルベ',0xece8df],['グリスサボン',0xc9c6bd],['グレイコンチェルト',0x9b9893],
+    ['サンディヘイズ',0xb9b0a0],['ミスティブラック',0x3a3a3c],
+    ['モデレートアイスグレー',0xd2d2cf],['モデレートアッシュ',0xb4b2ac],['モデレートココア',0x7c6a59],
+    ['モデレートブラック',0x33312f],['ソリッドホワイト',0xefeee9],['ソリッドベージュ',0xddd2bf],['ソリッドライトグレー',0xd3d2cd],
+  ],
+};
+const findHex = (list,name)=> (list.find(o=>o[0]===name)||list[0])[1];
+
+// ===================================================================
+//  3D 基盤
 // ===================================================================
 const app = document.getElementById('app');
 const renderer = new THREE.WebGLRenderer({ antialias:true });
@@ -170,138 +207,173 @@ controls.target.copy(persp.tgt);
 controls.enableDamping = true;
 controls.maxPolarAngle = Math.PI/2 - 0.02;
 
-// 照明
-scene.add(new THREE.HemisphereLight(0xffffff, 0x4a4f57, 0.9));
+scene.add(new THREE.HemisphereLight(0xffffff, 0x4a4f57, 0.95));
 const sun = new THREE.DirectionalLight(0xffffff, 1.4);
-sun.position.set(-6, 14, -4);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048,2048);
+sun.position.set(-6, 14, -4); sun.castShadow = true; sun.shadow.mapSize.set(2048,2048);
 const s = 14; Object.assign(sun.shadow.camera, { left:-s, right:s, top:s, bottom:-s, near:1, far:60 });
 scene.add(sun);
 
-// 地面 + バルコニー
-const groundMat = new THREE.MeshStandardMaterial({ color:0x2a3038 });
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(60,60), groundMat);
-ground.rotation.x = -Math.PI/2; ground.position.y = -0.02; ground.receiveShadow = true;
-scene.add(ground);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(60,60), new THREE.MeshStandardMaterial({ color:0x2a3038 }));
+ground.rotation.x = -Math.PI/2; ground.position.y = -0.02; ground.receiveShadow = true; scene.add(ground);
 
 const balMat = new THREE.MeshStandardMaterial({ color:0x6b7178 });
-function addBalcony(x,z,w,d){
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w,0.1,d), balMat);
-  m.position.set(x, 0.05, z); m.receiveShadow = true; scene.add(m);
-}
-addBalcony(ENV.W/2, -BAL/2, ENV.W, BAL);            // 南バルコニー
-addBalcony(ENV.W/2, ENV.D+BAL/2, ENV.W, BAL);       // 北バルコニー
+function addBalcony(x,z,w,d){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,0.1,d), balMat);
+  m.position.set(x,0.05,z); m.receiveShadow=true; scene.add(m); }
+addBalcony(ENV.W/2, -BAL/2, ENV.W, BAL);
+addBalcony(ENV.W/2, ENV.D+BAL/2, ENV.W, BAL);
 
-// 床（部屋ごと）
+// 床＋ラベル
 const floorGroup = new THREE.Group(); scene.add(floorGroup);
 const labelGroup = new THREE.Group(); scene.add(labelGroup);
 ROOMS.forEach(r=>{
-  const mat = new THREE.MeshStandardMaterial({ color:r.color, roughness:0.9 });
-  const f = new THREE.Mesh(new THREE.BoxGeometry(r.w, 0.05, r.d), mat);
-  f.position.set(r.x + r.w/2, 0.025, r.z + r.d/2);
-  f.receiveShadow = true; floorGroup.add(f);
-  labelGroup.add(makeLabel(r.name, r.x + r.w/2, 1.4, r.z + r.d/2));
+  const f = new THREE.Mesh(new THREE.BoxGeometry(r.w,0.05,r.d), new THREE.MeshStandardMaterial({ color:r.color, roughness:0.9 }));
+  f.position.set(r.x+r.w/2, 0.025, r.z+r.d/2); f.receiveShadow=true; floorGroup.add(f);
+  labelGroup.add(makeLabel(r.name, r.x+r.w/2, 1.4, r.z+r.d/2));
 });
 
 // 壁
 const wallGroup = new THREE.Group(); scene.add(wallGroup);
 const wallMats = [];
-function wallMaterial(){
-  const m = new THREE.MeshStandardMaterial({ color:0xf2f0ec, roughness:0.95, transparent:true, opacity:1 });
-  wallMats.push(m); return m;
-}
+function wallMaterial(){ const m=new THREE.MeshStandardMaterial({ color:0xf2f0ec, roughness:0.95, transparent:true, opacity:1 }); wallMats.push(m); return m; }
 function addWallBox(cx,cz,len,h,yC,angle){
-  const g = new THREE.BoxGeometry(len, h, WALL_T);
-  const m = new THREE.Mesh(g, wallMaterial());
-  m.position.set(cx, yC, cz); m.rotation.y = angle;
-  m.castShadow = true; m.receiveShadow = true; wallGroup.add(m);
+  const m=new THREE.Mesh(new THREE.BoxGeometry(len,h,WALL_T), wallMaterial());
+  m.position.set(cx,yC,cz); m.rotation.y=angle; m.castShadow=true; m.receiveShadow=true; wallGroup.add(m);
 }
 WALLS.forEach(w=>{
-  const dx = w.x2-w.x1, dz = w.z2-w.z1;
-  const len = Math.hypot(dx,dz); if(len<1e-3) return;
-  const ang = Math.atan2(dz, dx);   // 壁の向き
-  const ux = dx/len, uz = dz/len;
-  const h = w.h ?? ENV.CH;
-  // 開口を考慮して [start,end] 区間を分割
-  let cuts = [{s:0,e:len,full:true}];
-  const ops = (w.openings||[]).slice().sort((a,b)=>a.at-b.at);
-  // 水平方向の区間（垂れ壁・腰壁は別途）
-  let segs = [[0,len]];
-  ops.forEach(o=>{
-    const a = o.at - o.width/2, b = o.at + o.width/2;
-    const next=[];
-    segs.forEach(([s,e])=>{
-      if(b<=s || a>=e){ next.push([s,e]); return; }
-      if(a>s) next.push([s,a]);
-      if(b<e) next.push([b,e]);
-    });
-    segs = next;
-  });
-  // 開口の無い縦フル壁
-  segs.forEach(([s,e])=>{
-    const segLen = e-s; if(segLen<1e-3) return;
-    const mid = (s+e)/2;
-    addWallBox(w.x1+ux*mid, w.z1+uz*mid, segLen, h, h/2, ang);
-  });
-  // 開口上部の垂れ壁 / 下部の腰壁
-  ops.forEach(o=>{
-    const mid = o.at;
-    const top = o.top ?? h, sill = o.sill ?? 0;
-    if(h - top > 0.02) addWallBox(w.x1+ux*mid, w.z1+uz*mid, o.width, h-top, (top+h)/2, ang); // 垂れ壁
-    if(sill > 0.02)    addWallBox(w.x1+ux*mid, w.z1+uz*mid, o.width, sill, sill/2, ang);      // 腰壁
-    // 窓ガラス（外周窓のみ薄板）
-    if((o.top??h) >= 2.0 && (o.sill??0) < 0.05){
-      const glass = new THREE.Mesh(
-        new THREE.BoxGeometry(o.width, top-sill, 0.02),
-        new THREE.MeshStandardMaterial({ color:0x9fd0ee, transparent:true, opacity:0.28, roughness:0.1 }));
-      glass.position.set(w.x1+ux*mid, (sill+top)/2, w.z1+uz*mid); glass.rotation.y = ang;
-      wallGroup.add(glass);
+  const dx=w.x2-w.x1, dz=w.z2-w.z1, len=Math.hypot(dx,dz); if(len<1e-3) return;
+  const ang=Math.atan2(dz,dx), ux=dx/len, uz=dz/len, h=w.h??ENV.CH;
+  const ops=(w.openings||[]).slice().sort((a,b)=>a.at-b.at);
+  let segs=[[0,len]];
+  ops.forEach(o=>{ const a=o.at-o.width/2, b=o.at+o.width/2, next=[];
+    segs.forEach(([sg,eg])=>{ if(b<=sg||a>=eg){next.push([sg,eg]);return;} if(a>sg)next.push([sg,a]); if(b<eg)next.push([b,eg]); });
+    segs=next; });
+  segs.forEach(([sg,eg])=>{ const L=eg-sg; if(L<1e-3)return; const mid=(sg+eg)/2; addWallBox(w.x1+ux*mid,w.z1+uz*mid,L,h,h/2,ang); });
+  ops.forEach(o=>{ const mid=o.at, top=o.top??h, sill=o.sill??0;
+    if(h-top>0.02) addWallBox(w.x1+ux*mid,w.z1+uz*mid,o.width,h-top,(top+h)/2,ang);
+    if(sill>0.02)  addWallBox(w.x1+ux*mid,w.z1+uz*mid,o.width,sill,sill/2,ang);
+    if((o.top??h)>=2.0 && (o.sill??0)<0.05){
+      const g=new THREE.Mesh(new THREE.BoxGeometry(o.width,top-sill,0.02), new THREE.MeshStandardMaterial({ color:0x9fd0ee, transparent:true, opacity:0.28, roughness:0.1 }));
+      g.position.set(w.x1+ux*mid,(sill+top)/2,w.z1+uz*mid); g.rotation.y=ang; wallGroup.add(g);
     }
   });
 });
 
-// 家具
+// 一般家具
 const furnGroup = new THREE.Group(); scene.add(furnGroup);
-FURNITURE.forEach(f=>{
-  const m = new THREE.Mesh(new THREE.BoxGeometry(f.w, f.h, f.d),
-    new THREE.MeshStandardMaterial({ color:f.color, roughness:0.7 }));
-  m.position.set(f.x, f.h/2 + 0.05, f.z);
-  m.castShadow = true; m.receiveShadow = true; furnGroup.add(m);
-});
+FURNITURE.forEach(f=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(f.w,f.h,f.d), new THREE.MeshStandardMaterial({ color:f.color, roughness:0.7 }));
+  m.position.set(f.x, f.h/2+0.05, f.z); m.castShadow=true; m.receiveShadow=true; furnGroup.add(m); });
 
-// ラベル（キャンバススプライト）
-function makeLabel(text, x, y, z){
-  const c = document.createElement('canvas'); const sc=2; c.width=256*sc; c.height=64*sc;
-  const ctx = c.getContext('2d'); ctx.scale(sc,sc);
-  ctx.fillStyle='rgba(20,24,30,.78)'; roundRect(ctx,4,14,248,36,8); ctx.fill();
+function box(cx,cz,w,d,h,baseY,mat,group){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+  m.position.set(cx, baseY+h/2, cz); m.castShadow=true; m.receiveShadow=true; (group||scene).add(m); return m; }
+
+// ===================================================================
+//  色切替対応マテリアル（指定の初期色）
+// ===================================================================
+const M = {
+  bathAccent: new THREE.MeshStandardMaterial({ color:findHex(PAL.bathAccent,'フロウストーングレー'), roughness:0.85 }),
+  bathFloor : new THREE.MeshStandardMaterial({ color:findHex(PAL.bathFloor,'サンディグレー'), roughness:0.9 }),
+  bathTub   : new THREE.MeshStandardMaterial({ color:findHex(PAL.bathTub,'クリスタルパールホワイト'), roughness:0.25 }),
+  kitDoor   : new THREE.MeshStandardMaterial({ color:findHex(PAL.kitDoor,'ベージュ'), roughness:0.6 }),
+  kitPanel  : new THREE.MeshStandardMaterial({ color:findHex(PAL.kitPanel,'スウェディッシュグレー'), roughness:0.8 }),
+  kitTop    : new THREE.MeshStandardMaterial({ color:findHex(PAL.kitTop,'ソリッドライトグレー'), roughness:0.4 }),
+};
+const matWhite = new THREE.MeshStandardMaterial({ color:0xf3f1ec, roughness:0.9 });   // 浴室両脇＝白固定
+const matStainless = new THREE.MeshStandardMaterial({ color:0xc7cacd, roughness:0.3, metalness:0.6 });
+const matWood = c=>new THREE.MeshStandardMaterial({ color:c, roughness:0.7 });
+
+// --- 浴室 グランスパ1418（UB: x5.55..6.95, z6.32..8.12） ---
+const ub = { x0:5.55, x1:6.95, z0:6.32, z1:8.12 };
+box((ub.x0+ub.x1)/2, (ub.z0+ub.z1)/2, (ub.x1-ub.x0)-0.04, (ub.z1-ub.z0)-0.04, 0.03, 0.05, M.bathFloor); // 洗い場床
+box(ub.x0+0.03, (ub.z0+ub.z1)/2, 0.04, (ub.z1-ub.z0)-0.06, 2.0, 0.06, M.bathAccent);                    // シャワー側(西)＝アクセント壁
+box((ub.x0+ub.x1)/2, ub.z1-0.03, (ub.x1-ub.x0)-0.06, 0.04, 2.0, 0.06, matWhite);                         // 北壁＝白固定
+box((ub.x0+ub.x1)/2, ub.z0+0.03, (ub.x1-ub.x0)-0.06, 0.04, 2.0, 0.06, matWhite);                         // 南壁＝白固定
+box(ub.x1-0.03, (ub.z0+ub.z1)/2, 0.04, (ub.z1-ub.z0)-0.06, 2.0, 0.06, matWhite);                         // 東壁＝白固定
+box(6.5, 7.22, 0.78, 1.55, 0.55, 0.06, M.bathTub);                                                       // 浴槽
+box(6.5, 7.22, 0.62, 1.35, 0.04, 0.50, new THREE.MeshStandardMaterial({ color:0xeaf3f4, roughness:0.2 })); // 浴槽内側
+// シャワーバー・ミラー（アクセント壁面）
+box(5.62, 7.0, 0.04, 0.05, 1.0, 1.0, matStainless);
+box(5.62, 7.5, 0.03, 0.45, 0.55, 1.0, new THREE.MeshStandardMaterial({ color:0xd7e2e6, roughness:0.1, metalness:0.3 }));
+
+// --- 洗面 カスタムバニティ1200（洗面脱衣室 x4.70..6.00, z4.42..6.32） ---
+box(4.95, 5.1, 0.50, 1.2, 0.83, 0.05, matWood(0x8f8d88));                 // バニティカウンター(ソイルグレー)
+box(4.95, 5.1, 0.46, 1.1, 0.04, 0.86, matWood(0xc9b48f));                 // 下棚(クリエラスク)
+box(4.95, 5.1, 0.42, 0.55, 0.16, 0.84, new THREE.MeshStandardMaterial({ color:0xdcdad3, roughness:0.3 })); // ボウル(グレージュ)
+box(4.78, 5.1, 0.10, 1.1, 0.7, 1.45, matWhite);                          // ミラーキャビ
+
+// --- トイレ プレアスLS（トイレ x4.70..5.55, z6.32..7.62） ---
+box(5.05, 6.95, 0.40, 0.70, 0.42, 0.05, matWhite);                       // 便器(ピュアホワイト)
+box(5.05, 6.62, 0.36, 0.20, 0.55, 0.42, matWhite);                       // タンク部
+box(5.40, 6.9, 0.12, 0.55, 1.0, 0.05, matWood(0xc9ad86));                // 手洗カウンター/キャビ(ライトオーク)
+
+// --- キッチン トレーシア II列型165×165（壁付け＋造作対面） ---
+// 対面側(シンク)：x≈5.15 / 壁側(IH)：x≈6.55, いずれも長さ1.65をz方向に
+const kZ0 = 0.10, kLen = 1.65;
+box(5.15, kZ0+kLen/2, 0.65, kLen, 0.85, 0.0, M.kitDoor);                  // 対面カウンター本体(扉色)
+box(5.15, kZ0+kLen/2, 0.66, kLen+0.02, 0.04, 0.85, M.kitTop);            // 対面ワークトップ
+box(5.15, 0.95, 0.42, 0.55, 0.12, 0.74, matStainless);                   // シンク
+box(5.30, 0.65, 0.04, 0.04, 0.28, 0.89, matStainless);                   // 水栓
+box(6.55, kZ0+kLen/2, 0.65, kLen, 0.85, 0.0, M.kitDoor);                  // 壁側カウンター本体(扉色)
+box(6.55, kZ0+kLen/2, 0.66, kLen+0.02, 0.04, 0.85, M.kitTop);            // 壁側ワークトップ
+box(6.55, 1.3, 0.45, 0.45, 0.02, 0.89, new THREE.MeshStandardMaterial({ color:0x26282b, roughness:0.4 })); // IHヒーター
+box(ENV.W-0.07, kZ0+kLen/2, 0.04, kLen+0.2, 0.62, 0.90, M.kitPanel);     // キッチンパネル(東壁面)
+
+// ラベル
+function makeLabel(text,x,y,z){
+  const c=document.createElement('canvas'), sc=2; c.width=256*sc; c.height=64*sc;
+  const ctx=c.getContext('2d'); ctx.scale(sc,sc);
+  ctx.fillStyle='rgba(20,24,30,.78)'; rr(ctx,4,14,248,36,8); ctx.fill();
   ctx.fillStyle='#eaf2ff'; ctx.font='bold 26px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText(text,128,33);
-  const tex = new THREE.CanvasTexture(c); tex.anisotropy=4;
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false }));
+  const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false }));
   sp.position.set(x,y,z); sp.scale.set(1.2,0.3,1); return sp;
 }
-function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y);
-  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 
 // ===================================================================
-//  UI
+//  仕上げ材UI（色を選ぶと即反映）
 // ===================================================================
-const $ = id=>document.getElementById(id);
+function buildSelect(parentEl, labelText, options, defaultName, material, noteText){
+  const fl=document.createElement('div'); fl.className='fl'; fl.textContent=labelText; parentEl.appendChild(fl);
+  const wrap=document.createElement('div'); wrap.className='selwrap';
+  const sw=document.createElement('span'); sw.className='sw';
+  const sel=document.createElement('select');
+  options.forEach(([n,hex])=>{ const op=document.createElement('option'); op.value=n; op.textContent=n;
+    if(n===defaultName) op.selected=true; sel.appendChild(op); });
+  const apply=name=>{ const hex=findHex(options,name); material.color.setHex(hex); sw.style.background='#'+hex.toString(16).padStart(6,'0'); };
+  sel.onchange=()=>apply(sel.value); apply(defaultName);
+  wrap.appendChild(sw); wrap.appendChild(sel); parentEl.appendChild(wrap);
+  if(noteText){ const nt=document.createElement('div'); nt.className='note'; nt.textContent=noteText; parentEl.appendChild(nt); }
+}
+const gB=document.getElementById('grpBath');
+gB.innerHTML='<div class="gt">🛁 浴室（グランスパ 1418）</div>';
+buildSelect(gB,'シャワー側 壁（アクセント）', PAL.bathAccent, 'フロウストーングレー', M.bathAccent, '※両脇の壁は白で固定です');
+buildSelect(gB,'洗い場 床', PAL.bathFloor, 'サンディグレー', M.bathFloor);
+buildSelect(gB,'浴槽', PAL.bathTub, 'クリスタルパールホワイト', M.bathTub);
+
+const gK=document.getElementById('grpKitchen');
+gK.innerHTML='<div class="gt">🍳 キッチン（トレーシア II列型）</div>';
+buildSelect(gK,'扉カラー', PAL.kitDoor, 'ベージュ', M.kitDoor);
+buildSelect(gK,'キッチンパネル', PAL.kitPanel, 'スウェディッシュグレー', M.kitPanel);
+buildSelect(gK,'ワークトップ', PAL.kitTop, 'ソリッドライトグレー', M.kitTop);
+
+// ===================================================================
+//  視点・表示UI
+// ===================================================================
+const $=id=>document.getElementById(id);
 let topView=false;
-$('btnWalls').onclick = e=>{ wallGroup.visible=!wallGroup.visible; e.target.classList.toggle('on',wallGroup.visible); e.target.textContent=wallGroup.visible?'表示':'非表示'; };
-$('btnFurniture').onclick = e=>{ furnGroup.visible=!furnGroup.visible; e.target.classList.toggle('on',furnGroup.visible); e.target.textContent=furnGroup.visible?'表示':'非表示'; };
-$('btnLabels').onclick = e=>{ labelGroup.visible=!labelGroup.visible; e.target.classList.toggle('on',labelGroup.visible); e.target.textContent=labelGroup.visible?'表示':'非表示'; };
-$('opacity').oninput = e=>{ const v=e.target.value/100; wallMats.forEach(m=>{ m.opacity=v; m.transparent=v<1; }); };
-$('btnTop').onclick = e=>{
-  topView=!topView; e.target.classList.toggle('on',topView);
-  if(topView){ camera.position.set(ENV.W/2, 16, ENV.D/2+0.01); controls.target.set(ENV.W/2,0,ENV.D/2); }
-  else { camera.position.copy(persp.pos); controls.target.copy(persp.tgt); }
-};
+function moveTo(px,py,pz, tx,ty,tz){ camera.position.set(px,py,pz); controls.target.set(tx,ty,tz); topView=false; $('btnTop').classList.remove('on'); }
+$('btnFurniture').onclick=e=>{ furnGroup.visible=!furnGroup.visible; e.target.classList.toggle('on',furnGroup.visible); e.target.textContent=furnGroup.visible?'表示':'非表示'; };
+$('btnLabels').onclick=e=>{ labelGroup.visible=!labelGroup.visible; e.target.classList.toggle('on',labelGroup.visible); e.target.textContent=labelGroup.visible?'表示':'非表示'; };
+$('opacity').oninput=e=>{ const v=e.target.value/100; wallMats.forEach(m=>{ m.opacity=v; m.transparent=v<1; }); };
+$('btnTop').onclick=e=>{ topView=!topView; e.target.classList.toggle('on',topView);
+  if(topView){ camera.position.set(ENV.W/2,16,ENV.D/2+0.01); controls.target.set(ENV.W/2,0,ENV.D/2); }
+  else { camera.position.copy(persp.pos); controls.target.copy(persp.tgt); } };
+$('goKitchen').onclick=()=>moveTo(3.4,2.2,2.2, 6.0,0.8,1.0);
+$('goBath').onclick=()=>moveTo(3.6,2.0,7.2, 6.3,0.8,7.2);
 
 addEventListener('resize', ()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
-
 (function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene,camera); })();
 </script>
 </body>
