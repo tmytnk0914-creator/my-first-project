@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>間取り 2D（確認用ドラフト）</title>
+<style>
+  :root{ --bg:#11151b; --wall:#e9e6df; --line:#39414b; --txt:#1c222b; --accent:#2f6df6; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; background:var(--bg); color:#e8edf2;
+             font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif; }
+  header{ padding:14px 16px 6px; }
+  header h1{ font-size:17px; margin:0 0 4px; }
+  header p{ font-size:12.5px; line-height:1.55; color:#aeb8c2; margin:4px 0; }
+  .badge{ display:inline-block; background:#7a3b00; color:#ffd9a8; font-size:11px; font-weight:bold;
+          padding:2px 8px; border-radius:20px; margin-bottom:6px; }
+  #wrap{ width:100%; overflow:auto; padding:6px 10px 30px; }
+  svg{ width:100%; height:auto; max-width:560px; display:block; margin:0 auto; background:#fbfaf7; border-radius:10px; }
+  .rm{ fill:#f3efe7; stroke:var(--line); stroke-width:2.2; }
+  .wet{ fill:#e7eef1; }
+  .stor{ fill:#efe7d8; }
+  .hall{ fill:#eceae4; }
+  .bal{ fill:none; stroke:#9aa4ad; stroke-width:1.6; stroke-dasharray:6 5; }
+  .rn{ font-size:15px; font-weight:bold; fill:var(--txt); text-anchor:middle; }
+  .rs{ font-size:10.5px; fill:#5b636d; text-anchor:middle; }
+  .no{ font-size:11px; fill:#2f6df6; font-weight:bold; text-anchor:middle; }
+  .cap{ font-size:11px; fill:#7b818a; text-anchor:middle; }
+  .narr{ font-size:13px; fill:#445; text-anchor:middle; }
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">確認用ドラフト</span>
+  <h1>🗺️ 間取り 2D（すり合わせ用）</h1>
+  <p>図面から寸法線・設備注記などのノイズを除き、部屋の配置だけを描いたものです。
+     <b>正確さより「配置の認識合わせ」が目的</b>です。下の番号で「①は違う、②は北側」のように教えてください。直していきます。</p>
+  <p style="color:#8b939c">※南北にバルコニー。寸法・位置は私の読み取りベースの暫定値です。</p>
+</header>
+<div id="wrap"><svg id="plan" viewBox="-110 -120 640 900" role="img"></svg></div>
+
+<script>
+const S = 56;                       // 1m = 56単位
+const m = v => v * S;
+const svg = document.getElementById('plan');
+const NS = 'http://www.w3.org/2000/svg';
+function el(t,a){ const e=document.createElementNS(NS,t); for(const k in a) e.setAttribute(k,a[k]); return e; }
+function txt(x,y,s,cls){ const t=el('text',{x:m(x),y:m(y),class:cls}); t.textContent=s; svg.appendChild(t); return t; }
+
+// 部屋（x,y=南西基準ではなく左上基準, 単位m。Y下向き=北） ※暫定配置
+const ROOMS = [
+  {no:'①', n:'リビング',     s:'約12.2帖 / CH2423', x:0,    y:0,    w:3.55, h:3.90, c:'rm'},
+  {no:'②', n:'ダイニング',   s:'',                   x:3.55, y:0,    w:1.22, h:3.90, c:'rm'},
+  {no:'③', n:'キッチン D・K',s:'対面 / 冷蔵庫・食器棚', x:4.77, y:0,  w:2.18, h:3.90, c:'rm'},
+  {no:'④', n:'主寝室',       s:'約7帖 / CH2314',     x:0,    y:3.90, w:3.55, h:3.30, c:'rm'},
+  {no:'⑤', n:'WIC',          s:'ウォークイン',        x:0,    y:7.20, w:1.70, h:1.10, c:'stor'},
+  {no:'⑥', n:'廊下',         s:'CH2063',             x:3.55, y:3.90, w:0.95, h:5.10, c:'hall'},
+  {no:'⑦', n:'洗面脱衣室',   s:'バニティ W1200',      x:4.50, y:3.90, w:1.20, h:1.60, c:'wet'},
+  {no:'⑧', n:'浴室 UB',      s:'グランスパ 1418',     x:5.70, y:3.90, w:1.25, h:1.80, c:'wet'},
+  {no:'⑨', n:'トイレ',       s:'プレアスLS',          x:4.50, y:5.50, w:0.95, h:1.70, c:'wet'},
+  {no:'⑩', n:'収納/PS',      s:'',                   x:5.45, y:5.70, w:1.50, h:1.50, c:'stor'},
+  {no:'⑪', n:'玄関',         s:'玄関収納 トールW1200',x:1.70, y:7.20, w:1.85, h:1.90, c:'hall'},
+  {no:'⑫', n:'洋室①',       s:'約4.3帖 / CH2418',   x:0,    y:8.30, w:2.60, h:2.70, c:'rm'},
+  {no:'⑬', n:'洋室②',       s:'約5.1帖 / CH2418',   x:4.30, y:7.90, w:2.65, h:3.10, c:'rm'},
+];
+// 北側 廊下→バルコニーの抜け（洋室①②の間）
+const HALL2 = {x:3.55, y:7.20, w:0.95, h:3.80};
+
+const W = 6.95, D = 11.0;
+
+// バルコニー（南・北）
+svg.appendChild(el('rect',{x:m(0),   y:m(-1.4), width:m(W), height:m(1.25), class:'bal', rx:3}));
+txt(W/2, -0.55, 'バルコニー（南）', 'cap');
+svg.appendChild(el('rect',{x:m(0),   y:m(D+0.15), width:m(W), height:m(1.25), class:'bal', rx:3}));
+txt(W/2, D+0.85, 'バルコニー（北）', 'cap');
+
+// 第2廊下
+{ const r=HALL2; svg.appendChild(el('rect',{x:m(r.x),y:m(r.y),width:m(r.w),height:m(r.h),class:'rm hall'})); }
+
+// 部屋
+ROOMS.forEach(r=>{
+  svg.appendChild(el('rect',{x:m(r.x),y:m(r.y),width:m(r.w),height:m(r.h),class:'rm '+r.c, rx:1}));
+  const cx=r.x+r.w/2, cy=r.y+r.h/2;
+  txt(cx, cy-0.18, r.n, 'rn');
+  if(r.s) txt(cx, cy+0.28, r.s, 'rs');
+  txt(r.x+0.34, r.y+0.5, r.no, 'no');
+});
+
+// 外周（太線）
+svg.appendChild(el('rect',{x:m(0),y:m(0),width:m(W),height:m(D),fill:'none',stroke:'#222',  'stroke-width':5, rx:1}));
+
+// 方位
+txt(W+0.9, 0.2, 'N↑', 'narr');
+</script>
+</body>
+</html>
