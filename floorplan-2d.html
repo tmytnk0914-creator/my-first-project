@@ -3,98 +3,120 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>間取り 2D（確認用ドラフト v2）</title>
+<title>間取り 2D トレース v3</title>
 <style>
-  :root{ --bg:#11151b; --line:#39414b; --txt:#1c222b; }
+  :root{ --bg:#11151b; }
   *{ box-sizing:border-box; }
   html,body{ margin:0; background:var(--bg); color:#e8edf2;
              font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif; }
   header{ padding:14px 16px 6px; }
   header h1{ font-size:17px; margin:0 0 4px; }
   header p{ font-size:12.5px; line-height:1.55; color:#aeb8c2; margin:4px 0; }
-  .badge{ display:inline-block; background:#0d5a2b; color:#b6f3c8; font-size:11px; font-weight:bold;
+  .badge{ display:inline-block; background:#0d4a5a; color:#aee6f3; font-size:11px; font-weight:bold;
           padding:2px 8px; border-radius:20px; margin-bottom:6px; }
-  #wrap{ width:100%; overflow:auto; padding:6px 10px 30px; }
-  svg{ width:100%; height:auto; max-width:760px; display:block; margin:0 auto; background:#fbfaf7; border-radius:10px; }
-  .rm{ stroke:var(--line); stroke-width:2; }
-  .liv{ fill:#f1ece1; } .wet{ fill:#e3edf1; } .stor{ fill:#efe7d6; }
-  .hall{ fill:#eceae4; } .jp{ fill:#eee6cf; } .ent{ fill:#e6e3dc; }
-  .bal{ fill:#f0f2f3; stroke:#9aa4ad; stroke-width:1.4; stroke-dasharray:6 5; }
-  .rn{ font-size:14px; font-weight:bold; fill:var(--txt); text-anchor:middle; }
-  .rs{ font-size:9.5px; fill:#5b636d; text-anchor:middle; }
-  .no{ font-size:10px; fill:#1f7a3d; font-weight:bold; text-anchor:middle; }
+  #wrap{ width:100%; overflow:auto; padding:6px 8px 30px; }
+  svg{ width:100%; height:auto; max-width:900px; display:block; margin:0 auto; background:#fbfaf7; border-radius:10px; }
+  .rn{ font-size:13px; font-weight:bold; fill:#1c222b; text-anchor:middle; }
+  .rs{ font-size:9px; fill:#5b636d; text-anchor:middle; }
+  .no{ font-size:9.5px; fill:#0d6b85; font-weight:bold; text-anchor:middle; }
   .cap{ font-size:11px; fill:#7b818a; text-anchor:middle; }
-  .narr{ font-size:13px; fill:#445; text-anchor:middle; font-weight:bold; }
-  .dv{ stroke:#b9b3a5; stroke-width:1.4; stroke-dasharray:5 4; }
+  .narr{ font-size:14px; fill:#445; text-anchor:middle; font-weight:bold; }
 </style>
 </head>
 <body>
 <header>
-  <span class="badge">確認用ドラフト v2（現況図ベース）</span>
-  <h1>🗺️ 間取り 2D（業者図面を反映）</h1>
-  <p>いただいた現況図を読み取り、ノイズ（寸法線・注記）を除いて配置を整理しました。
-     番号で「①の向きが違う」等あれば教えてください。<b>バルコニーは左右（東西）、玄関は下側</b>です。</p>
+  <span class="badge">トレース v3</span>
+  <h1>🗺️ 間取り 2D（忠実トレース・調整中）</h1>
+  <p>形状・開口（ドア＝壁の切れ目／弧は省略）・配置を図面に寄せました。
+     <b>寸法は写真から読み切れない箇所が暫定</b>です。下の依頼の数値をもらえれば正確に合わせます。</p>
 </header>
-<div id="wrap"><svg id="plan" viewBox="-150 -70 1000 560" role="img"></svg></div>
+<div id="wrap"><svg id="plan" viewBox="-150 -55 1050 470" role="img"></svg></div>
 
 <script>
-const S = 56, m = v => v*S;
+const S = 0.052, m = v => v*S;
 const svg = document.getElementById('plan');
 const NS = 'http://www.w3.org/2000/svg';
 const el = (t,a)=>{ const e=document.createElementNS(NS,t); for(const k in a) e.setAttribute(k,a[k]); return e; };
-const txt = (x,y,s,c)=>{ const t=el('text',{x:m(x),y:m(y),class:c}); t.textContent=s; svg.appendChild(t); return t; };
+const add = e => (svg.appendChild(e), e);
+const txt = (x,y,s,c,extra)=>{ const t=el('text',Object.assign({x:m(x),y:m(y),class:c},extra||{})); t.textContent=s; return add(t); };
 
-// 内寸：横(X)≈11.3m, 縦(Y)=6.95m。Y下向き。左右にバルコニー、玄関は下中央。
-const W = 11.3, D = 6.95;
+// ===== 内寸 (mm) ※暫定値。要修正箇所は ★ =====
+const W = 11500;  // ★横（長辺）内寸：未確定
+const D = 6950;   //   縦（短辺）内寸：図面より確定
 
-// 部屋（x,y=左上基準, m）
+const COL = { liv:'#f1ece1', wet:'#e3edf1', stor:'#efe7d6', hall:'#eceae4', jp:'#eee6cf', ent:'#e6e3dc' };
+
+// 部屋 (x1,y1,x2,y2 mm)
 const ROOMS = [
-  {no:'①', n:'ダイニング',   s:'CH2085 / 防音FL',   x:0,    y:0,    w:4.0, h:2.0,  c:'liv'},
-  {no:'②', n:'リビング',     s:'CH2450 / 防音FL',   x:0,    y:2.0,  w:4.0, h:4.95, c:'liv'},
-  {no:'③', n:'キッチン',     s:'CH2100 / CF',       x:4.0,  y:0,    w:1.5, h:2.1,  c:'wet'},
-  {no:'④', n:'洗面脱衣室',   s:'CH2030 / CF',       x:5.5,  y:0,    w:1.1, h:2.4,  c:'wet'},
-  {no:'⑤', n:'UB 浴室',      s:'1418',              x:6.6,  y:0,    w:1.3, h:1.9,  c:'wet'},
-  {no:'⑥', n:'クローゼット', s:'(洋室1)',           x:7.9,  y:0,    w:1.0, h:1.1,  c:'stor'},
-  {no:'⑦', n:'トイレ',       s:'CH2025 / CF',       x:6.6,  y:1.9,  w:1.0, h:1.2,  c:'wet'},
-  {no:'⑧', n:'給湯器/PS',    s:'',                  x:5.5,  y:2.4,  w:1.1, h:0.9,  c:'stor'},
-  {no:'⑨', n:'物入',         s:'',                  x:7.6,  y:1.9,  w:0.9, h:1.2,  c:'stor'},
-  {no:'⑩', n:'廊下',         s:'CH2090 / 防音FL',   x:7.0,  y:3.1,  w:1.9, h:1.3,  c:'hall'},
-  {no:'⑪', n:'和室 (6畳)',   s:'CH2305 / 和天井',    x:4.0,  y:3.3,  w:2.5, h:3.65, c:'jp'},
-  {no:'⑫', n:'押入',         s:'天袋付',            x:6.5,  y:3.6,  w:0.9, h:1.6,  c:'stor'},
-  {no:'⑬', n:'玄関',         s:'',                  x:7.4,  y:4.7,  w:1.3, h:1.55, c:'ent'},
-  {no:'⑭', n:'玄関収納',     s:'分電盤',            x:8.7,  y:4.7,  w:0.55,h:1.4,  c:'stor'},
-  {no:'⑮', n:'クローゼット', s:'(洋室2)',           x:8.2,  y:3.5,  w:0.7, h:1.0,  c:'stor'},
-  {no:'⑯', n:'MB',           s:'',                  x:7.5,  y:6.25, w:0.7, h:0.7,  c:'stor'},
-  {no:'⑰', n:'洋室 1',       s:'CH2445 / 防音FL',   x:8.9,  y:0,    w:2.4, h:3.2,  c:'liv'},
-  {no:'⑱', n:'洋室 2',       s:'CH2445 / カーペット',x:8.9,  y:3.4,  w:2.4, h:3.55, c:'liv'},
+  ['①','ダイニング','CH2085',      0,0,     3950,1995, 'liv'],
+  ['②','リビング','CH2450',        0,1995,  3950,6950, 'liv'],
+  ['③','キッチン','CH2100',        3950,0,  5650,2100, 'wet'],
+  ['④','洗面脱衣室','CH2030',      5650,0,  6900,2300, 'wet'],
+  ['⑤','UB 浴室','1418',           6900,0,  8650,1450, 'wet'],
+  ['⑥','クローゼット','洋1',       8650,0,  9450,1050, 'stor'],
+  ['⑦','トイレ','CH2025',          6900,1900,7900,3100,'wet'],
+  ['⑧','給湯器','',                5650,2300,6350,3300,'stor'],
+  ['⑨','PS','',                    6350,2300,6700,2900,'stor'],
+  ['⑩','物入','',                  7900,1900,8650,3100,'stor'],
+  ['⑪','廊下','CH2090',            6900,3300,8650,4600,'hall'],
+  ['⑫','和室 (6畳)','CH2305 和天井',3950,3300,6500,6950,'jp'],
+  ['⑬','押入','天袋付',            6500,3500,7350,5100,'stor'],
+  ['⑭','玄関','',                  7350,4700,8650,6300,'ent'],
+  ['⑮','玄関収納','分電盤',        8650,4900,9300,6100,'stor'],
+  ['⑯','CL','洋2',                 8650,3400,9300,4400,'stor'],
+  ['⑰','MB','',                    7450,6300,8150,6950,'stor'],
+  ['⑱','洋室 1','CH2445',          8650,0,  11500,3250,'liv'],
+  ['⑲','洋室 2','CH2445 カーペット',9300,3400,11500,6950,'liv'],
 ];
 
 // バルコニー（左=西 / 右=東）
-svg.appendChild(el('rect',{x:m(-1.3),y:m(0.3),width:m(1.15),height:m(D-0.6),class:'bal',rx:3}));
-txt(-0.72, D/2, '', 'cap');
-const balL=el('text',{x:m(-0.72),y:m(D/2),class:'cap',transform:`rotate(-90 ${m(-0.72)} ${m(D/2)})`}); balL.textContent='バルコニー（西）'; svg.appendChild(balL);
-svg.appendChild(el('rect',{x:m(W+0.15),y:m(0.3),width:m(1.15),height:m(D-0.6),class:'bal',rx:3}));
-const balR=el('text',{x:m(W+0.72),y:m(D/2),class:'cap',transform:`rotate(90 ${m(W+0.72)} ${m(D/2)})`}); balR.textContent='バルコニー（東）'; svg.appendChild(balR);
+add(el('rect',{x:m(-1250),y:m(300),width:m(1100),height:m(D-600),fill:'#f0f2f3',stroke:'#9aa4ad','stroke-width':1.3,'stroke-dasharray':'6 5',rx:3}));
+txt(-700,D/2,'バルコニー（西）','cap',{transform:`rotate(-90 ${m(-700)} ${m(D/2)})`});
+add(el('rect',{x:m(W+150),y:m(300),width:m(1100),height:m(D-600),fill:'#f0f2f3',stroke:'#9aa4ad','stroke-width':1.3,'stroke-dasharray':'6 5',rx:3}));
+txt(W+700,D/2,'バルコニー（東）','cap',{transform:`rotate(90 ${m(W+700)} ${m(D/2)})`});
 
-// 部屋
-ROOMS.forEach(r=>{
-  svg.appendChild(el('rect',{x:m(r.x),y:m(r.y),width:m(r.w),height:m(r.h),class:'rm '+r.c, rx:1}));
-  const cx=r.x+r.w/2, cy=r.y+r.h/2;
-  txt(cx, cy-0.10, r.n, 'rn');
-  if(r.s) txt(cx, cy+0.30, r.s, 'rs');
-  txt(r.x+0.30, r.y+0.42, r.no, 'no');
+// 部屋（塗り）
+ROOMS.forEach(([no,n,s,x1,y1,x2,y2,c])=>{
+  add(el('rect',{x:m(x1),y:m(y1),width:m(x2-x1),height:m(y2-y1),fill:COL[c],stroke:'#6b7480','stroke-width':1.4}));
+  const cx=(x1+x2)/2, cy=(y1+y2)/2, small=(x2-x1)<1300||(y2-y1)<1000;
+  txt(cx,cy-(small?40:60),no,'no');
+  txt(cx,cy+(small?20:0),n,'rn');
+  if(s&&!small) txt(cx,cy+260,s,'rs');
 });
-// LDKの開放（点線仕切り）
-svg.appendChild(el('line',{x1:m(0),y1:m(2.0),x2:m(4.0),y2:m(2.0),class:'dv'}));
 
-// 外周
-svg.appendChild(el('rect',{x:m(0),y:m(0),width:m(W),height:m(D),fill:'none',stroke:'#222','stroke-width':5,rx:1}));
-// 玄関の入口（下側）
-svg.appendChild(el('line',{x1:m(7.6),y1:m(D),x2:m(8.5),y2:m(D),stroke:'#fbfaf7','stroke-width':6}));
-txt(8.05, D+0.5, '▲ 玄関入口', 'cap');
+// ドア（壁の開口）＝白で壁を切る＋直線のドアリーフ（弧なし）
+function door(orient,x,y,len,swing){
+  if(orient==='v'){
+    add(el('rect',{x:m(x)-2.4,y:m(y),width:4.8,height:m(len),fill:'#fbfaf7'}));
+    add(el('line',{x1:m(x),y1:m(y),x2:m(x+swing*len),y2:m(y),stroke:'#9aa1a8','stroke-width':1.4}));
+  }else{
+    add(el('rect',{x:m(x),y:m(y)-2.4,width:m(len),height:4.8,fill:'#fbfaf7'}));
+    add(el('line',{x1:m(x),y1:m(y),x2:m(x),y2:m(y+swing*len),stroke:'#9aa1a8','stroke-width':1.4}));
+  }
+}
+// 主要な開口（暫定位置）
+door('v',3950,4900,1600,-1);   // リビング↔和室（広い開口）
+door('h',5800,2300,700,1);     // 洗面の出入口
+door('v',6900,500,750,1);      // 洗面↔UB
+door('h',7100,1900,700,-1);    // トイレ
+door('h',9200,3250,800,1);     // 洋室1
+door('v',9300,3700,800,1);     // 洋室2
+door('h',7700,4700,800,-1);    // 玄関→廊下
+door('v',6500,5400,800,-1);    // 和室→玄関側
 
-// 方位
-txt(W+1.7, 0.3, 'N', 'narr');
+// 柱（構造）＝角の塗りつぶし四角
+function col(x,y){ add(el('rect',{x:m(x)-4,y:m(y)-4,width:8,height:8,fill:'#2b2f35'})); }
+[[0,0],[W,0],[0,D],[W,D],[3950,0],[8650,0],[3950,6950],[8650,3400]].forEach(([x,y])=>col(x,y));
+
+// 外周（太線）＋ 玄関入口（下側の開口）＋ 窓（バルコニー側）
+add(el('rect',{x:m(0),y:m(0),width:m(W),height:m(D),fill:'none',stroke:'#1d2127','stroke-width':5}));
+add(el('rect',{x:m(7550),y:m(D)-3,width:m(900),height:6,fill:'#fbfaf7'}));  // 玄関入口
+txt(8000,D+520,'▲ 玄関入口','cap');
+// 窓（西＝LDK / 東＝洋室）白で外周を切る
+[[0,500,2700],[0,3600,2900]].forEach(([x,y,len])=>add(el('rect',{x:m(x)-3,y:m(y),width:6,height:m(len),fill:'#cfe6f2'})));
+[[W,400,2400],[W,3700,2800]].forEach(([x,y,len])=>add(el('rect',{x:m(x)-3,y:m(y),width:6,height:m(len),fill:'#cfe6f2'})));
+
+txt(W+1500,300,'N','narr');
 </script>
 </body>
 </html>
