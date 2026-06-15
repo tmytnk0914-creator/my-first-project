@@ -112,7 +112,7 @@ const OPENINGS = [
   {orient:'h', at:2750,  a:5700, b:6500, sill:0, top:D_TOP},  // 廊下↔主寝室
   {orient:'v', at:7140,  a:3600, b:4400, sill:0, top:D_TOP},  // 廊下↔WIC①（廊下側アクセス）
   {orient:'h', at:2750,  a:4400, b:5150, sill:0, top:2000},   // 主寝室↔廊下
-  {orient:'h', at:5400,  a:7700, b:8500, sill:0, top:2000},   // 玄関 入口（南）
+  {orient:'h', at:6950,  a:7700, b:8400, sill:0, top:2000},   // 玄関 入口（南・共用廊下側）
   {orient:'v', at:4685,  a:2400, b:3300, sill:0, top:2000},   // 廊下↔リビング入口側 接続
   {orient:'v', at:8885,  a:1800, b:2580, sill:0, top:D_TOP},  // 廊下↔洋室1
   {orient:'v', at:9700,  a:3000, b:3800, sill:0, top:D_TOP},  // 玄関↔洋室2
@@ -271,6 +271,9 @@ ROOMS.forEach(r=>{ const [x1,y1,x2,y2]=r.bbox, ch=r.ch||WALL_H_DEFAULT;
   cm.position.set((x1+x2)/2*K, ch*K, (y1+y2)/2*K); ceilGroup.add(cm);
 });
 COLUMNS.forEach(([x1,y1,x2,y2])=>box(wallGroup,(x1+x2)/2,(y1+y2)/2,(x2-x1),(y2-y1),0,2423,wallMat()));
+// ① 外周（footprint）寸法線から確定。南東に段差(ノッチ)：東壁はy5685まで
+const PERIMETER=[['h',0,0,12810],['v',12810,0,5685],['h',5685,9700,12810],['v',9700,5685,6950],['h',6950,0,9700],['v',0,0,6950]];
+PERIMETER.forEach(([o,f,a,b])=>edge(o,f,a,b,2450,false));
 
 // 家具
 const furnGroup=new THREE.Group(); scene.add(furnGroup);
