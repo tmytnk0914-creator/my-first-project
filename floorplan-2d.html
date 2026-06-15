@@ -23,7 +23,7 @@
 </head>
 <body>
 <header>
-  <span class="badge">Ver 2.0 · 2026-06-15</span>
+  <span class="badge">Ver 2.1 · 2026-06-15</span>
   <h1>🗺️ 田中様邸 プラン2-2 間取り 2D</h1>
   <p>内寸 東西12,810 × 南北6,950mm。西・東にバルコニー、玄関は南。3Dと同じ寸法データから生成しています。</p>
 </header>
@@ -79,10 +79,10 @@ add(el('rect',{x:m(W+100),y:m(300),width:m(1100),height:m(2400),fill:'#eef1f2',s
 add(el('rect',{x:m(W+100),y:m(2900),width:m(1100),height:m(2700),fill:'#eef1f2',stroke:'#9aa4ad','stroke-width':1.2,'stroke-dasharray':'5 4'}));
 txt(W+650,D/2,'バルコニー(東)','cap',11);
 
-// 床（clip部屋を下に、solidを上に重ねて重なりを隠す）
-const ordered=[...ROOMS].sort((a,b)=>(b[5]?1:0)-(a[5]?1:0));
-ordered.forEach(([id,n,t,ch,bb,clip])=>{
-  const[x1,y1,x2,y2]=bb;
+// 床：footprint全体を廊下色で塗り→その上にsolid部屋を乗せる（残り=廊下/玄関。穴も重なりも無し）
+const FP=[[0,0],[W,0],[W,5685],[9700,5685],[9700,6950],[0,6950]];
+add(el('polygon',{points:FP.map(([x,y])=>`${m(x)},${m(y)}`).join(' '),fill:'#dde2e7'}));
+ROOMS.forEach(([id,n,t,ch,bb,clip])=>{ if(clip)return; const[x1,y1,x2,y2]=bb;
   add(el('rect',{x:m(x1),y:m(y1),width:m(x2-x1),height:m(y2-y1),fill:COLOR[id]||'#ddd'}));
 });
 

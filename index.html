@@ -39,7 +39,7 @@
 </head>
 <body>
 <div id="app"></div>
-<div id="ver">Ver 2.0 · 2026-06-15</div>
+<div id="ver">Ver 2.1 · 2026-06-15</div>
 
 <div id="ui" class="card panel">
   <div class="phead"><span class="ptitle">🏠 操作</span><button class="pmin">–</button></div>
@@ -200,12 +200,19 @@ bal(12.81+0.7, CZ, 1.3, 6.95*0.92);            // 東
 // 床（部屋ごと、床レベル反映）
 const floorGroup=new THREE.Group(); scene.add(floorGroup);
 const labelGroup=new THREE.Group(); scene.add(labelGroup);
+// ベース床（footprintを廊下色で埋める＝隙間/穴を防ぐ・残り=廊下/玄関）
+[[0,0,12810,5685],[0,5685,9700,6950]].forEach(([x1,y1,x2,y2])=>{
+  const f=new THREE.Mesh(new THREE.BoxGeometry((x2-x1)*K,0.04,(y2-y1)*K),new THREE.MeshStandardMaterial({color:0xc7ccd0,roughness:0.95}));
+  f.position.set((x1+x2)/2*K,-0.04,(y1+y2)/2*K); f.receiveShadow=true; floorGroup.add(f);
+});
 ROOMS.forEach(r=>{
   const [x1,y1,x2,y2]=r.bbox, ex=40;
   const w=(x2-x1+2*ex)*K, d=(y2-y1+2*ex)*K;
   const fl=r.fl*K;
-  const f=new THREE.Mesh(new THREE.BoxGeometry(w,0.05,d),new THREE.MeshStandardMaterial({color:r.c,roughness:0.92}));
-  f.position.set((x1+x2)/2*K, fl-0.025, (y1+y2)/2*K); f.receiveShadow=true; floorGroup.add(f);
+  if(!r.clip){
+    const f=new THREE.Mesh(new THREE.BoxGeometry(w,0.05,d),new THREE.MeshStandardMaterial({color:r.c,roughness:0.92}));
+    f.position.set((x1+x2)/2*K, fl-0.025, (y1+y2)/2*K); f.receiveShadow=true; floorGroup.add(f);
+  }
   const lab=r.tatami>0?`${r.n}\n${r.tatami}帖 / CH${r.ch}`:`${r.n}\nCH${r.ch}`;
   labelGroup.add(makeLabel(lab,(x1+x2)/2*K,1.5,(y1+y2)/2*K));
 });
