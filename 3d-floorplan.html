@@ -77,7 +77,7 @@ const WALL_H_DEFAULT = 2400;
 const ROOMS = [
   {id:'dk',     n:'DK',       tatami:5.1, ch:2058, fl:0,   bbox:[0,0,3915,2180],      c:0xddc9ad},
   {id:'living', n:'リビング', tatami:12.2,ch:2423, fl:0,   bbox:[0,2180,3910,6950],   c:0xd8c3a5},
-  {id:'master', n:'主寝室',   tatami:7.0, ch:2314, fl:0,   bbox:[3980,2750,7140,6240],c:0xc9b79c},
+  {id:'master', n:'主寝室',   tatami:7.0, ch:2314, fl:0,   bbox:[3980,2750,7140,6950],c:0xc9b79c},
   {id:'wic1',   n:'WIC①',    tatami:0,   ch:2314, fl:0,   bbox:[6310,2750,7140,4730],c:0xb7a98f},
   {id:'wic2',   n:'WIC②',    tatami:0,   ch:2328, fl:0,   bbox:[7575,0,8770,2245],   c:0xb7a98f},
   {id:'west1',  n:'洋室1',    tatami:5.1, ch:2418, fl:0,   bbox:[8885,0,12810,2610],  c:0xd0bfa3},
@@ -85,8 +85,8 @@ const ROOMS = [
   {id:'wash',   n:'洗面脱衣室',tatami:0,  ch:2030, fl:48,  bbox:[4755,0,6175,2030],   c:0xbcd0d6},
   {id:'ub',     n:'UB 浴室',  tatami:0,   ch:2100, fl:70,  bbox:[6175,0,7575,1800],   c:0xa9c4cf},
   {id:'toilet', n:'トイレ',   tatami:0,   ch:2025, fl:28,  bbox:[6320,1850,7320,2630],c:0xc1cdd2},
-  {id:'hall',   n:'廊下',     tatami:0,   ch:2063, fl:0,   bbox:[4685,2290,8885,3380],c:0xc7ccd0, noWalls:true},
-  {id:'entr',   n:'玄関',     tatami:0,   ch:2063, fl:-57, bbox:[7400,3380,8885,5400],c:0x9aa4ad, noWalls:true},
+  {id:'hall',   n:'廊下',     tatami:0,   ch:2063, fl:0,   bbox:[4685,2290,8885,3380],c:0xc7ccd0, clip:true},
+  {id:'entr',   n:'玄関',     tatami:0,   ch:2063, fl:-57, bbox:[7400,3380,8885,5400],c:0x9aa4ad, clip:true},
   {id:'pantry', n:'パントリー',tatami:0,  ch:2300, fl:0,   bbox:[3915,0,4685,1890],   c:0xe0d6c2},
 ];
 
@@ -112,6 +112,8 @@ const OPENINGS = [
   {orient:'h', at:2750,  a:5700, b:6500, sill:0, top:D_TOP},  // 廊下↔主寝室
   {orient:'v', at:7140,  a:3600, b:4400, sill:0, top:D_TOP},  // 廊下↔WIC①（廊下側アクセス）
   {orient:'h', at:2750,  a:4400, b:5150, sill:0, top:2000},   // 主寝室↔廊下
+  {orient:'h', at:5400,  a:7700, b:8500, sill:0, top:2000},   // 玄関 入口（南）
+  {orient:'v', at:4685,  a:2400, b:3300, sill:0, top:2000},   // 廊下↔リビング入口側 接続
   {orient:'v', at:8885,  a:1800, b:2580, sill:0, top:D_TOP},  // 廊下↔洋室1
   {orient:'v', at:9700,  a:3000, b:3800, sill:0, top:D_TOP},  // 玄関↔洋室2
   {orient:'v', at:3945,  a:2900, b:3700, sill:0, top:2003},   // リビング↔主寝室 建具(CH2003)
@@ -236,16 +238,24 @@ function decoWindow(orient,fixed,a,b,sill,top){
     [a+(b-a)/3,a+2*(b-a)/3].forEach(x=>box(wallGroup,x,fixed,50,90,sill,top,fr));
   }
 }
+// clip:true の部屋（廊下・玄関）は、他室の内部にめり込む壁だけ自動カットする
+const SOLID_ROOMS=ROOMS.filter(r=>!r.clip);
+function subInterval(segs,a,b){ const nx=[]; segs.forEach(([cs,ce])=>{ if(b<=cs||a>=ce){nx.push([cs,ce]);return;} if(a>cs)nx.push([cs,a]); if(b<ce)nx.push([b,ce]); }); return nx; }
+function midInSolid(orient,fixed,a,b){ const mx=orient==='h'?(a+b)/2:fixed, my=orient==='h'?fixed:(a+b)/2;
+  return SOLID_ROOMS.some(r=>{const[x1,y1,x2,y2]=r.bbox; return mx>x1+60&&mx<x2-60&&my>y1+60&&my<y2-60;}); }
 const seen=new Set();
-function edge(orient,fixed,s,e,ch){
-  const key=`${orient}|${Math.round(fixed/40)}|${Math.round((s+e)/200)}|${Math.round((e-s)/120)}`;
+function edge(orient,fixed,s,e,ch,clip){
+  const key=`${orient}|${Math.round(fixed/40)}|${Math.round((s+e)/200)}|${Math.round((e-s)/120)}|${clip?'c':''}`;
   if(seen.has(key)) return; seen.add(key);
   const ops=OPENINGS.filter(o=>o.orient===orient && Math.abs(o.at-fixed)<40 && o.b>s+1 && o.a<e-1);
   let segs=[[s,e]];
-  ops.forEach(o=>{ const a=Math.max(s,o.a), b=Math.min(e,o.b), nx=[];
-    segs.forEach(([cs,ce])=>{ if(b<=cs||a>=ce){nx.push([cs,ce]);return;} if(a>cs)nx.push([cs,a]); if(b<ce)nx.push([b,ce]); }); segs=nx; });
+  ops.forEach(o=>{ segs=subInterval(segs,Math.max(s,o.a),Math.min(e,o.b)); });
+  if(clip) SOLID_ROOMS.forEach(r=>{ const[bx1,by1,bx2,by2]=r.bbox;
+    if(orient==='h'){ if(fixed>by1+60&&fixed<by2-60) segs=subInterval(segs,bx1+60,bx2-60); }
+    else { if(fixed>bx1+60&&fixed<bx2-60) segs=subInterval(segs,by1+60,by2-60); } });
   segs.forEach(([cs,ce])=>{ if(ce-cs>1) drawWall(orient,fixed,cs,ce,0,ch); });
   ops.forEach(o=>{ const a=Math.max(s,o.a), b=Math.min(e,o.b); if(b<=a) return;
+    if(clip&&midInSolid(orient,fixed,a,b)) return;
     const top=o.top??D_TOP, sill=o.sill??0;
     if(ch-top>20) drawWall(orient,fixed,a,b,top,ch);
     if(sill>20)   drawWall(orient,fixed,a,b,0,sill);
@@ -255,9 +265,8 @@ function edge(orient,fixed,s,e,ch){
 }
 // 躯体柱（リビング南西角）
 const COLUMNS=[[0,6450,450,6950]];
-ROOMS.forEach(r=>{ if(r.noWalls) return; const [x1,y1,x2,y2]=r.bbox, ch=r.ch||WALL_H_DEFAULT;
-  edge('h',y1,x1,x2,ch); edge('h',y2,x1,x2,ch); edge('v',x1,y1,y2,ch); edge('v',x2,y1,y2,ch);
-  // 天井（任意表示）
+ROOMS.forEach(r=>{ const [x1,y1,x2,y2]=r.bbox, ch=r.ch||WALL_H_DEFAULT;
+  edge('h',y1,x1,x2,ch,r.clip); edge('h',y2,x1,x2,ch,r.clip); edge('v',x1,y1,y2,ch,r.clip); edge('v',x2,y1,y2,ch,r.clip);
   const cm=new THREE.Mesh(new THREE.BoxGeometry((x2-x1)*K,0.04,(y2-y1)*K),new THREE.MeshStandardMaterial({color:0xf6f5f1}));
   cm.position.set((x1+x2)/2*K, ch*K, (y1+y2)/2*K); ceilGroup.add(cm);
 });
