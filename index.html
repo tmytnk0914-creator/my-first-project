@@ -110,7 +110,8 @@ const OPENINGS = [
   {orient:'h', at:2630,  a:6450, b:7050, sill:0, top:D_TOP},  // 廊下↔トイレ
   {orient:'h', at:2245,  a:7900, b:8500, sill:0, top:D_TOP},  // 廊下↔WIC②
   {orient:'h', at:2750,  a:5700, b:6500, sill:0, top:D_TOP},  // 廊下↔主寝室
-  {orient:'v', at:6310,  a:3100, b:3900, sill:0, top:D_TOP},  // 主寝室↔WIC①
+  {orient:'v', at:7140,  a:3600, b:4400, sill:0, top:D_TOP},  // 廊下↔WIC①（廊下側アクセス）
+  {orient:'h', at:2750,  a:4400, b:5150, sill:0, top:2000},   // 主寝室↔廊下
   {orient:'v', at:8885,  a:1800, b:2580, sill:0, top:D_TOP},  // 廊下↔洋室1
   {orient:'v', at:9700,  a:3000, b:3800, sill:0, top:D_TOP},  // 玄関↔洋室2
   {orient:'v', at:3945,  a:2900, b:3700, sill:0, top:2003},   // リビング↔主寝室 建具(CH2003)
@@ -139,18 +140,23 @@ const FURN = [
   // 主寝室
   ['master','ベッド(D)',4450,3850,6530,5050,400,0x8694a3],
   ['master','デスク',4050,2820,4950,3420,720,0x9c7b54],
-  // WIC
-  ['wic1','棚',6380,2820,7080,4650,1800,0xa99a82],
-  ['wic2','棚',7650,120,8700,2150,1800,0xa99a82],
+  // WIC（ハンガーパイプ＋可動棚）
+  ['wic1','ﾊﾟｲﾌﾟ',6480,2950,6580,4550,50,0x9a9a9a,1750],
+  ['wic1','棚',6900,2820,7090,4600,1750,0xa99a82],
+  ['wic2','棚',7650,120,8740,420,1750,0xa99a82],
+  ['wic2','ﾊﾟｲﾌﾟ',7680,520,8720,620,50,0x9a9a9a,1750],
+  ['wic2','ﾊﾟｲﾌﾟ',7660,650,7760,2120,50,0x9a9a9a,1750],
   // 洋室1
   ['west1','電子ピアノ',9700,100,11070,550,900,0x33363a],
   ['west1','デスク',11250,100,12250,700,720,0x9c7b54],
   ['west1','ベッド(S)',10000,1500,12050,2520,400,0x8694a3],
-  ['west1','ｵｰﾌﾟﾝCL',8920,100,9450,2100,1800,0xa99a82],
+  ['west1','ｵｰﾌﾟﾝCL',8920,100,9450,2100,1800,0xa99a82],   // L=1400
+  ['west1','ﾊﾟｲﾌﾟ',9080,300,9180,1850,50,0x9a9a9a,1750],
   // 洋室2
   ['west2','デスク',10000,2780,11000,3380,720,0x9c7b54],
   ['west2','ベッド(S)',9900,4600,11950,5620,400,0x8694a3],
-  ['west2','ｵｰﾌﾟﾝCL',9750,2730,10950,3150,1800,0xa99a82],
+  ['west2','ｵｰﾌﾟﾝCL',9750,2730,10950,3150,1800,0xa99a82],   // L=1200
+  ['west2','ﾊﾟｲﾌﾟ',9850,2830,11000,2930,50,0x9a9a9a,1750],
   // 水回り
   ['wash','洗面化粧台',4800,400,5300,1600,850,0xe6ebee],
   ['wash','洗濯機',5450,100,6050,700,1000,0xdfe3e6],
@@ -260,8 +266,9 @@ COLUMNS.forEach(([x1,y1,x2,y2])=>box(wallGroup,(x1+x2)/2,(y1+y2)/2,(x2-x1),(y2-y
 // 家具
 const furnGroup=new THREE.Group(); scene.add(furnGroup);
 const roomFL=Object.fromEntries(ROOMS.map(r=>[r.id,r.fl]));
-FURN.forEach(([rid,lab,x1,y1,x2,y2,h,col])=>{
-  const fl=(roomFL[rid]||0);
+FURN.forEach(a=>{
+  const [rid,lab,x1,y1,x2,y2,h,col,base=0]=a;
+  const fl=(roomFL[rid]||0)+base;
   const mt=new THREE.MeshStandardMaterial({color:col,roughness:0.7});
   box(furnGroup,(x1+x2)/2,(y1+y2)/2,(x2-x1),(y2-y1),fl,fl+h,mt);
 });
