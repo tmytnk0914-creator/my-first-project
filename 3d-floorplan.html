@@ -95,13 +95,13 @@ const W_TOP = 2200, D_TOP = 2000;   // 窓/ドアの上端
 const OPENINGS = [
   // 掃き出し窓（西・東バルコニー）
   {orient:'v', at:0,     a:250,  b:1900, sill:0, top:W_TOP, type:'win'},   // DK 西
-  {orient:'v', at:0,     a:2500, b:6600, sill:0, top:W_TOP, type:'win'},   // リビング 西
+  {orient:'v', at:0,     a:3400, b:6300, sill:0, top:W_TOP, type:'win'},   // リビング 西（上部1150は壁・南西は柱）
   {orient:'v', at:12810, a:300,  b:2300, sill:0, top:W_TOP, type:'win'},   // 洋室1 東
   {orient:'v', at:12810, a:2900, b:5500, sill:0, top:W_TOP, type:'win'},   // 洋室2 東
   // リビング↔DK 一体（壁なし）
   {orient:'h', at:2180,  a:0,    b:3910, sill:0, top:2600, type:'open'},
-  // 室内窓（リビング↔主寝室・デコマド）腰窓
-  {orient:'v', at:3945,  a:3200, b:5200, sill:900, top:2000, type:'win'},
+  // 室内窓（リビング↔主寝室・LIXILデコマド 3列2段）作り付け収納の上
+  {orient:'v', at:3945,  a:4150, b:6150, sill:850, top:2050, type:'deco'},
   // 室内ドア（概略位置）
   {orient:'v', at:6175,  a:500,  b:1300, sill:0, top:D_TOP},  // 洗面↔UB
   {orient:'h', at:2030,  a:5000, b:5800, sill:0, top:D_TOP},  // 廊下↔洗面
@@ -111,7 +111,7 @@ const OPENINGS = [
   {orient:'v', at:6310,  a:3100, b:3900, sill:0, top:D_TOP},  // 主寝室↔WIC①
   {orient:'v', at:8885,  a:1800, b:2580, sill:0, top:D_TOP},  // 廊下↔洋室1
   {orient:'v', at:9700,  a:3000, b:3800, sill:0, top:D_TOP},  // 玄関↔洋室2
-  {orient:'v', at:3910,  a:3200, b:4000, sill:0, top:2003},   // リビング↔主寝室 建具(CH2003)
+  {orient:'v', at:3945,  a:2900, b:3700, sill:0, top:2003},   // リビング↔主寝室 建具(CH2003)
 ];
 
 // ===== 家具（plan rect mm, h=高さmm） =====
@@ -123,10 +123,10 @@ const FURN = [
   ['dk','カウンター収納',40,60,1390,660,850,0xb7a98f],     // W750+W600=1350
   ['dk','ダイニングT',300,1250,1800,2020,720,0x9c7b54],    // 1500×770
   // リビング
-  ['living','ソファ',900,3900,3000,4800,750,0x6b7b8c],
-  ['living','TVボード',1100,6450,2500,6900,450,0x3a3f45],
-  ['living','本棚',150,6600,1050,6900,900,0xb7a98f],
-  ['living','作付収納',3456,3000,3910,5500,2000,0xb7a98f],
+  ['living','ソファ',650,3450,2750,4350,750,0x6b7b8c],     // 2100×900
+  ['living','TVボード',1500,6500,2900,6950,450,0x3a3f45],  // 1400×450(南壁)
+  ['living','本棚',520,6650,1420,6950,900,0xb7a98f],        // 900×300(南壁西寄り)
+  ['living','作付収納',3456,4150,3910,6150,850,0xc8b79a],  // 2000×454 h850(東壁・デコ窓下)
   ['living','造作ｶｳﾝﾀｰ',3980,6300,5320,6900,850,0x9c7b54],
   // 主寝室
   ['master','ベッド(D)',4450,3850,6530,5050,400,0x8694a3],
@@ -207,6 +207,21 @@ function glass(orient,fixed,a,b,sill,top){
   if(orient==='h') box(wallGroup,(a+b)/2,fixed,(b-a),20,sill,top,mt);
   else             box(wallGroup,fixed,(a+b)/2,20,(b-a),sill,top,mt);
 }
+// LIXILデコマド（3列2段）：ガラス＋方立/中桟（弧なし）
+function decoWindow(orient,fixed,a,b,sill,top){
+  glass(orient,fixed,a,b,sill,top);
+  const fr=new THREE.MeshStandardMaterial({color:0x8a7a66,roughness:0.7});
+  const my=(sill+top)/2;
+  if(orient==='v'){
+    box(wallGroup,fixed,(a+b)/2,90,(b-a),my-25,my+25,fr);          // 中桟(横)
+    [a+(b-a)/3,a+2*(b-a)/3].forEach(z=>box(wallGroup,fixed,z,90,50,sill,top,fr)); // 方立(縦)×2
+    box(wallGroup,fixed,(a+b)/2,90,(b-a),sill,sill+30,fr);
+    box(wallGroup,fixed,(a+b)/2,90,(b-a),top-30,top,fr);
+  }else{
+    box(wallGroup,(a+b)/2,fixed,(b-a),90,my-25,my+25,fr);
+    [a+(b-a)/3,a+2*(b-a)/3].forEach(x=>box(wallGroup,x,fixed,50,90,sill,top,fr));
+  }
+}
 const seen=new Set();
 function edge(orient,fixed,s,e,ch){
   const key=`${orient}|${Math.round(fixed/40)}|${Math.round((s+e)/200)}|${Math.round((e-s)/120)}`;
@@ -221,14 +236,18 @@ function edge(orient,fixed,s,e,ch){
     if(ch-top>20) drawWall(orient,fixed,a,b,top,ch);
     if(sill>20)   drawWall(orient,fixed,a,b,0,sill);
     if(o.type==='win') glass(orient,fixed,a,b,sill,top);
+    else if(o.type==='deco') decoWindow(orient,fixed,a,b,sill,top);
   });
 }
+// 躯体柱（リビング南西角）
+const COLUMNS=[[0,6450,450,6950]];
 ROOMS.forEach(r=>{ if(r.noWalls) return; const [x1,y1,x2,y2]=r.bbox, ch=r.ch||WALL_H_DEFAULT;
   edge('h',y1,x1,x2,ch); edge('h',y2,x1,x2,ch); edge('v',x1,y1,y2,ch); edge('v',x2,y1,y2,ch);
   // 天井（任意表示）
   const cm=new THREE.Mesh(new THREE.BoxGeometry((x2-x1)*K,0.04,(y2-y1)*K),new THREE.MeshStandardMaterial({color:0xf6f5f1}));
   cm.position.set((x1+x2)/2*K, ch*K, (y1+y2)/2*K); ceilGroup.add(cm);
 });
+COLUMNS.forEach(([x1,y1,x2,y2])=>box(wallGroup,(x1+x2)/2,(y1+y2)/2,(x2-x1),(y2-y1),0,2423,wallMat()));
 
 // 家具
 const furnGroup=new THREE.Group(); scene.add(furnGroup);
